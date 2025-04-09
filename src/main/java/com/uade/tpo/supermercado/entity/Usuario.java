@@ -37,7 +37,7 @@ public class Usuario  {
     private LocalDateTime fecha_registro;
 
     public Usuario(){
-        
+        this.fecha_registro = LocalDateTime.now(); // auto asigna la fecha y hora actual
     }
 
     public Usuario( String username, String email, String password, String nombre, String apellido, String rol,
@@ -50,13 +50,4 @@ public class Usuario  {
         this.rol = rol;
         this.fecha_registro = fecha_registro;
     }
-    
-
-
-
-
-
-    
-
-    
 }
