@@ -32,6 +32,7 @@ public class HistorialPrecio {
     private LocalDateTime fechaCambio;
 
     public HistorialPrecio() {
+        
     }
 
     public HistorialPrecio(Producto producto, BigDecimal precioAnterior, BigDecimal precioNuevo, LocalDateTime fechaCambio) {

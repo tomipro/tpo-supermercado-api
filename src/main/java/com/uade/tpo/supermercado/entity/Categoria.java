@@ -12,6 +12,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import lombok.Data;
 
 @Entity
@@ -30,6 +31,9 @@ public class Categoria {
 
     @OneToMany(mappedBy = "parentCategoria",cascade = CascadeType.ALL)
     private List<Categoria> subcategorias;
+
+    @OneToOne(mappedBy = "categoria_id")
+    private Producto producto;
 
     public Categoria(){
 
