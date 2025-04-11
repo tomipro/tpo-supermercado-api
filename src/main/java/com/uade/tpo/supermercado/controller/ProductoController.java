@@ -1,7 +1,6 @@
 package com.uade.tpo.supermercado.controller;
 
 import org.springframework.data.domain.Page;
-
 import java.math.BigDecimal;
 import java.net.URI;
 import java.util.Optional;
@@ -10,10 +9,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.uade.tpo.supermercado.entity.Categoria;
 import com.uade.tpo.supermercado.entity.Producto;
 import com.uade.tpo.supermercado.excepciones.*;
 import com.uade.tpo.supermercado.service.ProductoService;
-
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -50,7 +50,7 @@ public class ProductoController {
     }
     
     @GetMapping("/{categoria}")
-    public ResponseEntity<Producto> getProductoByCategory(@RequestParam String categoria) {
+    public ResponseEntity<Producto> getProductoByCategory(@RequestParam int categoria) {
         Optional<Producto> result = productoService.getProductoByCategory(categoria);
         if (result.isPresent())
             return ResponseEntity.ok(result.get());
@@ -78,15 +78,16 @@ public class ProductoController {
 
     @PostMapping
     public ResponseEntity<Object> createProducto(@RequestBody ProductoRequest producto) throws ProductoDuplicateException {
-        Producto result = productoService.createProducto(producto.getNombre(), producto.getMarca(), producto.getPrecio(), producto.getCategoria_id());
+        Producto result = productoService.createProducto(producto.getNombre(), producto.getDescripcion(), producto.getMarca(), producto.getPrecio(), String.valueOf(producto.getCategoria_id()));
         return ResponseEntity.created(URI.create("/productos/" + result.getId())).body(result);
     }
 
     @PutMapping
     public ResponseEntity<Object> putProducto(@PathVariable int id, @RequestBody ProductoRequest productoRequest) throws ProductoNotFoundException {
-        Producto entity = productoService.updateProducto(id, productoRequest.getNombre(), productoRequest.getMarca(), productoRequest.getPrecio(), productoRequest.getCategoria_id());
+        Categoria categoria = productoService.getCategoriaById(productoRequest.getCategoria_id());
+        Producto entity = productoService.updateProducto(id, productoRequest.getNombre(), productoRequest.getDescripcion(), productoRequest.getMarca(), productoRequest.getPrecio(), categoria);
         if (entity == null) {
-            
+            throw new ProductoNotFoundException();
         }
         return ResponseEntity.ok(entity);
     }
@@ -95,5 +96,5 @@ public class ProductoController {
     public ResponseEntity<Object> deleteProducto(@PathVariable int id) throws ProductoNotFoundException {
         productoService.deleteProducto(id);
         return ResponseEntity.noContent().build();
-
+    }
 }

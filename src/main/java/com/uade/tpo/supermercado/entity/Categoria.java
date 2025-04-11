@@ -1,5 +1,6 @@
 package com.uade.tpo.supermercado.entity;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -32,8 +33,8 @@ public class Categoria {
     @OneToMany(mappedBy = "parentCategoria",cascade = CascadeType.ALL)
     private List<Categoria> subcategorias;
 
-    @OneToOne(mappedBy = "categoria_id")
-    private Producto producto;
+    @OneToMany(mappedBy = "categoria", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Producto> productos = new ArrayList<>();
 
     public Categoria(){
 

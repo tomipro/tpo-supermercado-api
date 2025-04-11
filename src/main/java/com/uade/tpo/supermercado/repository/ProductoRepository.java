@@ -24,17 +24,19 @@ public interface ProductoRepository extends JpaRepository<Producto, Integer> {
     Optional<Producto> findByPrecio(BigDecimal precio);
 
     @Query(value = "select p from Producto p where p.categoria = ?1")
-    Optional<Producto> findByCategoria(String categoria);
+    Optional<Producto> findByCategoria(int categoria_id);
 
     @Query(value = "Select p from Producto")
     Optional<Producto> findAllProductos();
 
-    @Query(value = "Insert into Producto (nombreProducto, marca, precio, categoria) values (?1, ?2, ?3, ?4)", nativeQuery = true)
-    Producto createProducto(String nombreProducto, String marca, BigDecimal precio, String categoria);
-
-    @Query(value = "Update Producto set nombreProducto = ?1, marca = ?2, precio = ?3, categoria = ?4 where id = ?5", nativeQuery = true)
-    void updateProducto(String nombreProducto, String marca, BigDecimal precio, Categoria categoria, int id);
+    @Query(value = "insert into Producto (nombreProducto, descripcion, marca, precio, categoria) values (?1, ?2, ?3, ?4, ?5)", nativeQuery = true)
+    Producto createProducto(String nombreProducto, String descripcion, String marca, BigDecimal precio,
+            String categoria);
 
     @Query(value = "Delete from Producto where id = ?1", nativeQuery = true)
     void deleteProducto(int id);
+
+    @Query(value = "update Producto set nombreProducto = ?1, descripcion = ?2, marca = ?3, precio = ?4, categoria = ?5 where id = ?6", nativeQuery = true)
+    Producto updateProducto(int id, String nombreProducto, String descripcion, String marca, BigDecimal precio,
+            Categoria categoria);
 }

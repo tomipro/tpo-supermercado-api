@@ -2,12 +2,16 @@ package com.uade.tpo.supermercado.entity;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import lombok.Data;
@@ -40,9 +44,9 @@ public class Producto {
     @Column(name = "Fecha_Vencimiento", nullable = false)
     private LocalDate date;
 
-    @OneToOne
-    @JoinColumn(name = "categoria_id", nullable = false)//Despues se hara la relacion
-    private int categoria_id;
+    @ManyToOne
+    @JoinColumn(name = "categoria_id", nullable = false)
+    private Categoria categoria;
 
     @Column(nullable = false, columnDefinition = "INT DEFAULT 0")
     private int ventas_totales;
@@ -53,16 +57,15 @@ public class Producto {
     @Column(length = 20,nullable = false,columnDefinition = "VARCHAR(20) DEFAULT 'activo'")
     private String estado;
 
-    @OneToMany
-    @JoinColumn(name = "imagen_id", nullable = false)
-    private Imagen imagen; 
+    @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Imagen> imagenes = new ArrayList<>();
 
     public Producto(){
 
     }
 
     public Producto(String nombre, String descripcion, BigDecimal precio, int stock, String marca,
-            String unidad_medida, LocalDate date, int categoria_id, int ventas_totales, int stock_minimo,
+            String unidad_medida, LocalDate date, Categoria categoria, int ventas_totales, int stock_minimo,
             String estado) {
         this.nombre = nombre;
         this.descripcion = descripcion;
@@ -71,7 +74,7 @@ public class Producto {
         this.marca = marca;
         this.unidad_medida = unidad_medida;
         this.date = date;
-        this.categoria_id = categoria_id;
+        this.categoria = categoria;
         this.ventas_totales = ventas_totales;
         this.stock_minimo = stock_minimo;
         this.estado = estado;
