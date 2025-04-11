@@ -29,7 +29,7 @@ public class ProductoServiceImpl implements ProductoService {
     }
 
     @Override
-    public Optional<Producto> getProductoByCategory(Categoria categoria) {
+    public Optional<Producto> getProductoByCategory(String categoria) {
         return productoRepository.findByCategoria(categoria);
     }
 
@@ -44,7 +44,7 @@ public class ProductoServiceImpl implements ProductoService {
     }
 
     @Override
-    public Producto createProducto(String nombreProducto, String marca, BigDecimal precio, int categoria)
+    public Producto createProducto(String nombreProducto, String marca, BigDecimal precio, String categoria)
             throws ProductoDuplicateException {
         // Check if the product already exists
         Optional<Producto> existingProduct = productoRepository.findAllProductos()
@@ -58,7 +58,6 @@ public class ProductoServiceImpl implements ProductoService {
     @Override
     public Producto updateProducto(int id, String nombreProducto, String marca, BigDecimal precio, Categoria categoria)
             throws ProductoNotFoundException {
-        // Check if the product exists
         Optional<Producto> existingProduct = productoRepository.findAllProductos()
                 .filter(producto -> producto.getId() == id);
 
@@ -76,7 +75,6 @@ public class ProductoServiceImpl implements ProductoService {
 
     @Override
     public void deleteProducto(int id) throws ProductoNotFoundException {
-        // Check if the product exists
         Optional<Producto> existingProduct = productoRepository.findAllProductos()
                 .filter(producto -> producto.getId() == id);
 

@@ -12,7 +12,7 @@ import com.uade.tpo.supermercado.entity.Categoria;
 import com.uade.tpo.supermercado.entity.Producto;
 
 @Repository
-public interface ProductoRepository extends JpaRepository<Producto, Long> {
+public interface ProductoRepository extends JpaRepository<Producto, Integer> {
     
     @Query(value = "select p from Producto p where p.nombreProducto = ?1")
     Optional<Producto> findByNombreProducto(String nombreProducto);
@@ -24,13 +24,13 @@ public interface ProductoRepository extends JpaRepository<Producto, Long> {
     Optional<Producto> findByPrecio(BigDecimal precio);
 
     @Query(value = "select p from Producto p where p.categoria = ?1")
-    Optional<Producto> findByCategoria(Categoria categoria);
+    Optional<Producto> findByCategoria(String categoria);
 
     @Query(value = "Select p from Producto")
     Optional<Producto> findAllProductos();
 
     @Query(value = "Insert into Producto (nombreProducto, marca, precio, categoria) values (?1, ?2, ?3, ?4)", nativeQuery = true)
-    Producto createProducto(String nombreProducto, String marca, BigDecimal precio, Categoria categoria);
+    Producto createProducto(String nombreProducto, String marca, BigDecimal precio, String categoria);
 
     @Query(value = "Update Producto set nombreProducto = ?1, marca = ?2, precio = ?3, categoria = ?4 where id = ?5", nativeQuery = true)
     void updateProducto(String nombreProducto, String marca, BigDecimal precio, Categoria categoria, int id);
