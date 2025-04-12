@@ -28,6 +28,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 @RestController
 @RequestMapping ("Producto")
 public class ProductoController {
+    
+    
     @Autowired
     private ProductoService productoService;
     
@@ -97,4 +99,5 @@ public class ProductoController {
         productoService.deleteProducto(id);
         return ResponseEntity.noContent().build();
     }
+         
 }

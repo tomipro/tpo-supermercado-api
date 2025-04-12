@@ -5,12 +5,13 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.stereotype.Service;
 import com.uade.tpo.supermercado.entity.Categoria;
 import com.uade.tpo.supermercado.entity.Producto;
 import com.uade.tpo.supermercado.excepciones.ProductoDuplicateException;
 import com.uade.tpo.supermercado.excepciones.ProductoNotFoundException;
 import com.uade.tpo.supermercado.repository.ProductoRepository;
-
+@Service
 public class ProductoServiceImpl implements ProductoService {
 
     @Autowired
