@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.uade.tpo.supermercado.entity.*;
 import java.net.URI;
-// Corrected import statement for the Category class
 import com.uade.tpo.supermercado.entity.Categoria;
 import com.uade.tpo.supermercado.excepciones.CategoriaNoEncontrada;
 import com.uade.tpo.supermercado.excepciones.NoCategoriesToDeleteException;
@@ -26,8 +25,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 public class CategoriaController {
     @Autowired
     private CategoriaService categoriaService;
-    
-    
 
     /**
  * Obtiene categorías paginadas
@@ -114,7 +111,26 @@ public class CategoriaController {
             return ResponseEntity.noContent().build();
         }
         
+
+        
     }
+
+    @PostMapping("/{id}")
+    public ResponseEntity<Categoria> updateCategory(@PathVariable int id, @RequestBody com.uade.tpo.supermercado.entity.dto.CategoryRequest categoryRequest) 
+            throws CategoriaNoEncontrada {
+        // Verificar si la categoría existe
+        Categoria existingCategory = categoriaService.getCategoriaById(id)
+                .orElseThrow(() -> new CategoriaNoEncontrada("La categoría con ID " + id + " no existe."));
+        
+        // Actualizar la categoría
+        Categoria updatedCategory = categoriaService.updateCategory(id, categoryRequest);
+        
+        return ResponseEntity.ok(updatedCategory);
+    }
+    
+
+
+
 
 
 
