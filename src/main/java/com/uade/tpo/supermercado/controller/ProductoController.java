@@ -14,6 +14,8 @@ import com.uade.tpo.supermercado.entity.Categoria;
 import com.uade.tpo.supermercado.entity.Producto;
 import com.uade.tpo.supermercado.excepciones.*;
 import com.uade.tpo.supermercado.service.ProductoService;
+
+import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
