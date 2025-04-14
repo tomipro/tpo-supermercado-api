@@ -13,14 +13,24 @@ import com.uade.tpo.supermercado.entity.Producto;
 
 @Repository
 public interface ProductoRepository extends JpaRepository<Producto, Integer> {
+
+        @Query(value = "select p from Producto p where p.id = ?1")
+        Optional<Producto> findById(int id);
+
         @Query(value = "select p from Producto p where p.nombreProducto = ?1")
         Optional<Producto> findByNombreProducto(String nombreProducto);
 
         @Query(value = "select p from Producto p where p.marca = ?1")
         Optional<Producto> findByMarca(String marca);
 
-        @Query(value = "select p from Producto p where p.precio = ?1")
-        Optional<Producto> findByPrecio(BigDecimal precio);
+        @Query(value = "select p from Producto p where p.precio <= ?1")
+        Optional<Producto> findByPrecioMaximo(BigDecimal precio);
+
+        @Query(value = "select p from Producto p where p.precio >= ?1")
+        Optional<Producto> findByPrecioMinimo(BigDecimal precio);
+
+        @Query(value = "select p from producto p where p.precio <= ?1 and p.precio >= ?2")
+        Optional<Producto> findByPrecio(BigDecimal precioMax, BigDecimal precioMin);
 
         @Query(value = "select p from Producto p where p.categoria = ?1")
         Optional<Producto> findByCategoria(int categoria_id);
@@ -29,15 +39,13 @@ public interface ProductoRepository extends JpaRepository<Producto, Integer> {
         Optional<Producto> findAllProductos();
 
         @Query(value = "insert into Producto (nombreProducto, descripcion, marca, precio, categoria) values (?1, ?2, ?3, ?4, ?5)", nativeQuery = true)
-        Producto createProducto(String nombreProducto, String descripcion, String marca, BigDecimal precio,
-                        String categoria);
+        Producto createProducto(String nombreProducto, String descripcion, String marca, BigDecimal precio, int categoria_id);
 
         @Query(value = "Delete from Producto where id = ?1", nativeQuery = true)
         void deleteProducto(int id);
 
-        @Query(value = "update Producto set nombreProducto = ?1, descripcion = ?2, marca = ?3, precio = ?4, categoria = ?5 where id = ?6", nativeQuery = true)
-        Producto updateProducto(int id, String nombreProducto, String descripcion,
-                        String marca, BigDecimal precio,
-                        Categoria categoria);
+        @Query(value = "update Producto set nombreProducto = ?1, descripcion = ?2, marca = ?3, precio = ?4, categoria_id = ?5 where id = ?6", nativeQuery = true)
+        Producto updateProducto(String nombreProducto, String descripcion,
+                        String marca, BigDecimal precio, int categoria_id, int id);
 
 }

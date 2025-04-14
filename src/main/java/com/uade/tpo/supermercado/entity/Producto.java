@@ -46,7 +46,7 @@ public class Producto {
 
     @ManyToOne
     @JoinColumn(name = "categoria_id", nullable = false)
-    private Categoria categoria;
+    private int categoria_id;
 
     @Column(nullable = false, columnDefinition = "INT DEFAULT 0")
     private int ventas_totales;
@@ -63,31 +63,5 @@ public class Producto {
     public Producto(){
 
     }
-
-    public Producto(String nombre, String descripcion, BigDecimal precio, int stock, String marca,
-            String unidad_medida, LocalDate date, Categoria categoria, int ventas_totales, int stock_minimo,
-            String estado) {
-        this.nombre = nombre;
-        this.descripcion = descripcion;
-        this.precio = precio;
-        this.stock = stock;
-        this.marca = marca;
-        this.unidad_medida = unidad_medida;
-        this.date = date;
-        this.categoria = categoria;
-        this.ventas_totales = ventas_totales;
-        this.stock_minimo = stock_minimo;
-        this.estado = estado;
-    }
-
-    public Producto(String nombreProducto, String marca2, BigDecimal precio2, Categoria categoria) {
-        //TODO Auto-generated constructor stub
-    }
-
-    
-
-
-
-
-    
+        
 }
