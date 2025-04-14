@@ -5,7 +5,6 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Pageable;
 import com.uade.tpo.supermercado.entity.Categoria;
@@ -15,8 +14,6 @@ import com.uade.tpo.supermercado.excepciones.DatoDuplicadoException;
 import com.uade.tpo.supermercado.excepciones.NoEncontradoException;
 import com.uade.tpo.supermercado.excepciones.ParametroFueraDeRangoException;
 import com.uade.tpo.supermercado.repository.CategoryRepository;
-
-import io.micrometer.core.instrument.config.validate.Validated.Valid;
 
 @Service
 public class CategoriaServiceImpl implements CategoriaService {

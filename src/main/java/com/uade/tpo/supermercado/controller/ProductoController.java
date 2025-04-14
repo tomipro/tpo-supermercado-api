@@ -27,94 +27,80 @@ import org.springframework.web.bind.annotation.PathVariable;
 @RestController
 @RequestMapping("Producto")
 public class ProductoController {
-    /*
-     * 
-     * @Autowired
-     * private ProductoService productoService;
-     * 
-     * @GetMapping
-     * public ResponseEntity<Page<Producto>> getProductos(
-     * 
-     * @RequestParam(required = false) Integer page,
-     * 
-     * @RequestParam(required = false) Integer size) {
-     * if (page == null || size == null)
-     * return ResponseEntity.ok(productoService.getProductos(PageRequest.of(0,
-     * Integer.MAX_VALUE)));
-     * return ResponseEntity.ok(productoService.getProductos(PageRequest.of(page,
-     * size)));
-     * }
-     * 
-     * @GetMapping("/{nombreProducto}")
-     * public ResponseEntity<Producto> getProductoByName(@RequestParam String
-     * nombreProducto) {
-     * Optional<Producto> result =
-     * productoService.getProductoByName(nombreProducto);
-     * if (result.isPresent())
-     * return ResponseEntity.ok(result.get());
-     * 
-     * return ResponseEntity.noContent().build();
-     * }
-     * 
-     * @GetMapping("/{categoria}")
-     * public ResponseEntity<Producto> getProductoByCategory(@RequestParam int
-     * categoria) {
-     * Optional<Producto> result = productoService.getProductoByCategory(categoria);
-     * if (result.isPresent())
-     * return ResponseEntity.ok(result.get());
-     * 
-     * return ResponseEntity.noContent().build();
-     * }
-     * 
-     * @GetMapping("/{marca}")
-     * public ResponseEntity<Producto> getProductoByMarca(@RequestParam String
-     * marca) {
-     * Optional<Producto> result = productoService.getProductoByMarca(marca);
-     * if (result.isPresent())
-     * return ResponseEntity.ok(result.get());
-     * 
-     * return ResponseEntity.noContent().build();
-     * }
-     * 
-     * @GetMapping("/{precio}")
-     * public ResponseEntity<Producto> getProductoByPrecio(@RequestParam BigDecimal
-     * precio) {
-     * Optional<Producto> result = productoService.getProductoByPrecio(precio);
-     * if (result.isPresent())
-     * return ResponseEntity.ok(result.get());
-     * 
-     * return ResponseEntity.noContent().build();
-     * }
-     * 
-     * @PostMapping
-     * public ResponseEntity<Object> createProducto(@RequestBody ProductoRequest
-     * producto) throws ProductoDuplicateException {
-     * Producto result = productoService.createProducto(producto.getNombre(),
-     * producto.getDescripcion(), producto.getMarca(), producto.getPrecio(),
-     * String.valueOf(producto.getCategoria_id()));
-     * return ResponseEntity.created(URI.create("/productos/" +
-     * result.getId())).body(result);
-     * }
-     * 
-     * @PutMapping
-     * public ResponseEntity<Object> putProducto(@PathVariable int id, @RequestBody
-     * ProductoRequest productoRequest) throws ProductoNotFoundException {
-     * Categoria categoria =
-     * productoService.getCategoriaById(productoRequest.getCategoria_id());
-     * Producto entity = productoService.updateProducto(id,
-     * productoRequest.getNombre(), productoRequest.getDescripcion(),
-     * productoRequest.getMarca(), productoRequest.getPrecio(), categoria);
-     * if (entity == null) {
-     * throw new ProductoNotFoundException();
-     * }
-     * return ResponseEntity.ok(entity);
-     * }
-     * 
-     * @DeleteMapping
-     * public ResponseEntity<Object> deleteProducto(@PathVariable int id) throws
-     * ProductoNotFoundException {
-     * productoService.deleteProducto(id);
-     * return ResponseEntity.noContent().build();
-     * }
-     */
+    @Autowired
+    private ProductoService productoService;
+
+    @GetMapping
+    public ResponseEntity<Page<Producto>> getProductos(
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size) {
+        if (page == null || size == null)
+            return ResponseEntity.ok(productoService.getProductos(PageRequest.of(0, Integer.MAX_VALUE)));
+        return ResponseEntity.ok(productoService.getProductos(PageRequest.of(page, size)));
+    }
+
+    @GetMapping("/{nombreProducto}")
+    public ResponseEntity<Producto> getProductoByName(@RequestParam String nombreProducto) {
+        Optional<Producto> result = productoService.getProductoByName(nombreProducto);
+        if (result.isPresent())
+            return ResponseEntity.ok(result.get());
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{categoria}")
+    public ResponseEntity<Producto> getProductoByCategory(@RequestParam int categoria) {
+        Optional<Producto> result = productoService.getProductoByCategory(categoria);
+        if (result.isPresent())
+            return ResponseEntity.ok(result.get());
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{marca}")
+    public ResponseEntity<Producto> getProductoByMarca(@RequestParam String marca) {
+        Optional<Producto> result = productoService.getProductoByMarca(marca);
+        if (result.isPresent())
+            return ResponseEntity.ok(result.get());
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{precio}")
+    public ResponseEntity<Producto> getProductoByPrecio(@RequestParam BigDecimal precio) {
+        Optional<Producto> result = productoService.getProductoByPrecio(precio);
+        if (result.isPresent())
+            return ResponseEntity.ok(result.get());
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping
+    public ResponseEntity<Object> createProducto(@RequestBody ProductoRequest producto)
+            throws ProductoDuplicateException {
+        Producto result = productoService.createProducto(producto.getNombre(),
+                producto.getDescripcion(), producto.getMarca(), producto.getPrecio(),
+                String.valueOf(producto.getCategoria_id()));
+        return ResponseEntity.created(URI.create("/productos/" + result.getId())).body(result);
+    }
+
+    @PutMapping
+    public ResponseEntity<Object> putProducto(@PathVariable int id, @RequestBody ProductoRequest productoRequest)
+            throws ProductoNotFoundException {
+        Categoria categoria = productoService.getCategoriaById(productoRequest.getCategoria_id());
+        Producto entity = productoService.updateProducto(id,
+                productoRequest.getNombre(), productoRequest.getDescripcion(),
+                productoRequest.getMarca(), productoRequest.getPrecio(), categoria);
+        if (entity == null) {
+            throw new ProductoNotFoundException();
+        }
+        return ResponseEntity.ok(entity);
+    }
+
+    @DeleteMapping
+    public ResponseEntity<Object> deleteProducto(@PathVariable int id) throws ProductoNotFoundException {
+        productoService.deleteProducto(id);
+        return ResponseEntity.noContent().build();
+    }
+
 }
