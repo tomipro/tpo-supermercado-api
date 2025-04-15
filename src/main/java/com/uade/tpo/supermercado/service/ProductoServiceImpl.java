@@ -16,6 +16,7 @@ import com.uade.tpo.supermercado.entity.Producto;
 import com.uade.tpo.supermercado.excepciones.ProductoDuplicateException;
 import com.uade.tpo.supermercado.excepciones.ProductoNotFoundException;
 import com.uade.tpo.supermercado.repository.ProductoRepository;
+
 @Service
 public class ProductoServiceImpl implements ProductoService {
 
@@ -62,16 +63,17 @@ public class ProductoServiceImpl implements ProductoService {
             throws ProductoDuplicateException {
         // Verifica si el producto ya existe
         Optional<Producto> existingProduct = productoRepository.findAllProductos()
-                .filter(producto -> producto.getNombre().equals(productoRequest.getNombre()) && producto.getMarca().equals(productoRequest.getMarca()));
+                .filter(producto -> producto.getNombre().equals(productoRequest.getNombre())
+                        && producto.getMarca().equals(productoRequest.getMarca()));
         if (existingProduct.isPresent()) {
             throw new ProductoDuplicateException();
         }
-        //Crea un nuevo producto y lo guarda en la base de datos
+        // Crea un nuevo producto y lo guarda en la base de datos
         Producto nuevoProducto = new Producto();
         nuevoProducto.setNombre(productoRequest.getNombre());
         nuevoProducto.setDescripcion(productoRequest.getDescripcion());
         nuevoProducto.setMarca(productoRequest.getMarca());
-        nuevoProducto.setPrecio(productoRequest.getPrecio());  
+        nuevoProducto.setPrecio(productoRequest.getPrecio());
         nuevoProducto.setCategoria_id(productoRequest.getCategoria_id());
         // agregamos las imagenes
         List<Imagen> imagenes = new ArrayList<>();
@@ -130,7 +132,4 @@ public class ProductoServiceImpl implements ProductoService {
         return productoRepository.findById(id);
     }
 
-    
-
-    
 }

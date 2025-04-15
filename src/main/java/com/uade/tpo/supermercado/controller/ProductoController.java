@@ -44,11 +44,12 @@ public class ProductoController {
         else if (page < 1 || size < 1)
             throw new ParametroFueraDeRangoException("Los parámetros de paginación deben ser mayores a 0");
         else
-        return ResponseEntity.ok(productoService.getProductos(PageRequest.of(page, size)));
+            return ResponseEntity.ok(productoService.getProductos(PageRequest.of(page, size)));
     }
 
     @GetMapping("/{nombreProducto}")
-    public ResponseEntity<Producto> getProductoByName(@RequestParam String nombreProducto) throws ProductoNotFoundException {
+    public ResponseEntity<Producto> getProductoByName(@RequestParam String nombreProducto)
+            throws ProductoNotFoundException {
         // Se puede obtener el producto por nombre
         // Si el nombre es nulo o vacío, se lanza una excepción
         // Si no se encuentra el producto, se lanza una excepción
@@ -61,7 +62,8 @@ public class ProductoController {
     }
 
     @GetMapping("/{categoria}")
-    public ResponseEntity<Producto> getProductoByCategory(@RequestParam int categoria) throws ProductoNotFoundException {
+    public ResponseEntity<Producto> getProductoByCategory(@RequestParam int categoria)
+            throws ProductoNotFoundException {
         // Se puede obtener el producto por el id de la categoria
         // Si el id de la categoria es menor a 1, se lanza una excepción
         // Si no se encuentra el producto, se lanza una excepción
@@ -89,7 +91,8 @@ public class ProductoController {
     }
 
     @GetMapping("/{precio}")
-    public ResponseEntity<Producto> getProductoByPrecioMaximo(@RequestParam BigDecimal precioMax, @RequestParam BigDecimal precioMin) throws ProductoNotFoundException {
+    public ResponseEntity<Producto> getProductoByPrecioMaximo(@RequestParam BigDecimal precioMax,
+            @RequestParam BigDecimal precioMin) throws ProductoNotFoundException {
         // Se puede obtener el producto por precio
         // Si ambos son nulos, se lanza una excepción
         // Si el precio máximo es menor al mínimo, se lanza una excepción
@@ -112,7 +115,8 @@ public class ProductoController {
             return ResponseEntity.ok(result.get());
         }
 
-        throw new ProductoNotFoundException("No se encontraron productos con precio máximo: " + precioMax + " y mínimo: " + precioMin);
+        throw new ProductoNotFoundException(
+                "No se encontraron productos con precio máximo: " + precioMax + " y mínimo: " + precioMin);
     }
 
     @PostMapping
@@ -166,7 +170,7 @@ public class ProductoController {
             productoService.updateProducto(id, productoRequest);
             return ResponseEntity.ok(result.get());
         }
-        throw new ProductoNotFoundException("No se encontró el producto con id: " + id);    
+        throw new ProductoNotFoundException("No se encontró el producto con id: " + id);
     }
 
     @DeleteMapping

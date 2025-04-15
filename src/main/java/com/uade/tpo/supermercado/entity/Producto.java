@@ -26,10 +26,10 @@ public class Producto {
     @Column(length = 100, nullable = false)
     private String nombre;
 
-    @Column(columnDefinition = "TEXT",nullable =false)
+    @Column(columnDefinition = "TEXT", nullable = false)
     private String descripcion;
 
-    @Column(nullable = false,precision = 10, scale = 2)
+    @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal precio;
 
     @Column(nullable = false)
@@ -46,7 +46,7 @@ public class Producto {
 
     @ManyToOne
     @JoinColumn(name = "categoria_id", nullable = false)
-    private int categoria_id;
+    private Categoria categoria;
 
     @Column(nullable = false, columnDefinition = "INT DEFAULT 0")
     private int ventas_totales;
@@ -54,14 +54,14 @@ public class Producto {
     @Column(nullable = false, columnDefinition = "INT DEFAULT 0")
     private int stock_minimo;
 
-    @Column(length = 20,nullable = false,columnDefinition = "VARCHAR(20) DEFAULT 'activo'")
+    @Column(length = 20, nullable = false, columnDefinition = "VARCHAR(20) DEFAULT 'activo'")
     private String estado;
 
     @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Imagen> imagenes = new ArrayList<>();
 
-    public Producto(){
+    public Producto() {
 
     }
-        
+
 }

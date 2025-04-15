@@ -180,25 +180,16 @@ public class CategoriaController {
     // padre.
     @DeleteMapping("/{categoriaID}")
     public ResponseEntity<Void> deleteCategoryById(@PathVariable int categoriaID) {
-        // Verificar si la categoría con el ID proporcionado existe
         Optional<Categoria> categoria = categoriaService.getCategoriaById(categoriaID);
         if (!categoria.isPresent()) {
             throw new NoEncontradoException("La categoría con ID " + categoriaID + " no se encuentra.");
         }
 
-        // Verificar si la categoría tiene subcategorías
-        List<Categoria> subcategorias = categoriaService.getSubcategoriasByParentId(categoriaID);
-        if (!subcategorias.isEmpty()) {
-            // Si tiene subcategorías, eliminarlas primero
-            categoriaService.deleteSubcategorias(subcategorias);
-        }
-
-        // Eliminar la categoría principal
+        // Borrá directamente y dejá que cascade se encargue
         categoriaService.deleteCategory(categoriaID);
 
-        // Devolver una respuesta indicando que la operación fue exitosa (204 No
-        // Content)
         return ResponseEntity.noContent().build();
+
     }
 
     // ACTUALIZAR CATEGORIA

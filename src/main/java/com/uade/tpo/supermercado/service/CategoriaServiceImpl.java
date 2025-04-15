@@ -79,8 +79,6 @@ public class CategoriaServiceImpl implements CategoriaService {
         // Actualizar la relación padre-hijo
         if (parentCategoria != null) {
             categoria.setParentCategoria(parentCategoria);
-            // Actualizar la relación bidireccional en el padre
-            parentCategoria.getSubcategorias().add(categoria);
         } else {
             categoria.setParentCategoria(null); // Si es raíz, no tiene padre
         }
@@ -123,24 +121,18 @@ public class CategoriaServiceImpl implements CategoriaService {
 
     @Override
     public void deleteCategory(int id) {
-        // Validación del ID de la categoría
-        if (id < 1) {
-            throw new ParametroFueraDeRangoException("El ID de la categoría debe ser mayor o igual a 1.");
-        }
-
-        // Verificar si la categoría existe antes de eliminarla
         Optional<Categoria> categoria = categoriaRepository.findById(id);
 
-        // Eliminar la categoría
-        categoriaRepository.delete(categoria.get());
+        if (categoria.isPresent()) {
+            Categoria cat = categoria.get();
+            // Si es subcategoría, quitála del padre antes
+            if (cat.getParentCategoria() != null) {
+                cat.getParentCategoria().getSubcategorias().remove(cat);
+            }
 
-    }
-
-    @Override
-    public void deleteSubcategorias(List<Categoria> subcategorias) {
-        for (Categoria subcategoria : subcategorias) {
-            categoriaRepository.delete(subcategoria);
+            categoriaRepository.delete(cat);
         }
+
     }
 
     @Override

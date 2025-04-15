@@ -24,9 +24,6 @@ public interface CategoriaService {
     // Obtener subcategorías de una categoría padre
     List<Categoria> getSubcategoriasByParentId(int parentId);
 
-    // Eliminar una lista de subcategorías
-    void deleteSubcategorias(List<Categoria> subcategorias);
-
     // Eliminar una categoría por ID
     void deleteCategory(int id);
 
