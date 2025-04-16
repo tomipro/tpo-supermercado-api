@@ -67,8 +67,9 @@ public class ProductoController {
         // Se puede obtener el producto por el id de la categoria
         // Si el id de la categoria es menor a 1, se lanza una excepción
         // Si no se encuentra el producto, se lanza una excepción
-        if (categoria.getId() < 1)
-            throw new ParametroFueraDeRangoException("El id de la categoría debe ser mayor a 0");
+        // Si la categoria es nula, se lanza una excepción
+        if (categoria.getId() < 1 || categoria == null)
+            throw new ParametroFueraDeRangoException("El id de la categoría debe ser mayor a 0 o la categoría no existe");
         Optional<Producto> result = productoService.getProductoByCategory(categoria);
         if (result.isPresent())
             return ResponseEntity.ok(result.get());
@@ -132,6 +133,9 @@ public class ProductoController {
         if (producto.getPrecio() == null || producto.getPrecio().compareTo(BigDecimal.ZERO) <= 0) {
             throw new ParametroFueraDeRangoException("El precio no puede ser nulo o menor a 0");
         }
+        if (producto.getCategoria() == null || producto.getCategoria().getId() < 1) {
+            throw new ParametroFueraDeRangoException("El id de la categoría debe ser mayor a 0 o la categoría no existe");
+        }
         Producto result = productoService.createProducto(producto);
         return ResponseEntity.created(URI.create("/productos/" + result.getId())).body(result);
     }
@@ -160,7 +164,7 @@ public class ProductoController {
             throw new ParametroFueraDeRangoException("El precio no puede ser nulo o menor a 0");
         }
         if (productoRequest.getCategoria() == null || productoRequest.getCategoria().getId() < 1) {
-            throw new ParametroFueraDeRangoException("El id de la categoría debe ser mayor a 0");
+            throw new ParametroFueraDeRangoException("El id de la categoría debe ser mayor a 0 o la categoría no existe");
         }        
         Optional<Producto> result = productoService.getProductoById(id);
         if (result.isPresent()) {
