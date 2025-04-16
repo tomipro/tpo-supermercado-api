@@ -2,8 +2,10 @@ package com.uade.tpo.supermercado.controller;
 
 import com.uade.tpo.supermercado.controller.dto.LoginRequest;
 import com.uade.tpo.supermercado.controller.dto.UsuarioLoginResponse;
+import com.uade.tpo.supermercado.controller.dto.LoginJwtResponse;
 import com.uade.tpo.supermercado.entity.Usuario;
 import com.uade.tpo.supermercado.service.UsuarioService;
+import com.uade.tpo.supermercado.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +13,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 @RestController
 @RequestMapping("/usuarios")
@@ -19,47 +23,74 @@ public class UsuarioController {
     @Autowired
     private UsuarioService usuarioService;
 
-    // Obtener todos los usuarios
-    @GetMapping
-    public ResponseEntity<List<Usuario>> getAllUsuarios() {
-        List<Usuario> usuarios = usuarioService.getAllUsuarios();
-        return ResponseEntity.ok(usuarios);
+    @Autowired
+    private JwtUtil jwtUtil;
+
+    // DTO para exponer solo datos seguros
+    public static class UsuarioProfileDTO {
+        public int id;
+        public String username;
+        public String email;
+        public String nombre;
+        public String apellido;
+        public String rol;
+        public java.time.LocalDateTime fecha_registro;
+
+        public UsuarioProfileDTO(Usuario u) {
+            this.id = u.getId();
+            this.username = u.getUsername();
+            this.email = u.getEmail();
+            this.nombre = u.getNombre();
+            this.apellido = u.getApellido();
+            this.rol = u.getRol();
+            this.fecha_registro = u.getFecha_registro();
+        }
     }
 
-    // Obtener un usuario por ID
+    // Obtener todos los usuarios (sin password)
+    @GetMapping
+    public ResponseEntity<List<UsuarioProfileDTO>> getAllUsuarios() {
+        List<Usuario> usuarios = usuarioService.getAllUsuarios();
+        List<UsuarioProfileDTO> safeUsuarios = usuarios.stream()
+            .map(UsuarioProfileDTO::new)
+            .toList();
+        return ResponseEntity.ok(safeUsuarios);
+    }
+
+    // Obtener un usuario por ID (sin password)
     @GetMapping("/{id}")
-    public ResponseEntity<Usuario> getUsuarioById(@PathVariable int id) {
+    public ResponseEntity<UsuarioProfileDTO> getUsuarioById(@PathVariable int id) {
         Optional<Usuario> usuario = usuarioService.getUsuarioById(id);
-        return usuario.map(ResponseEntity::ok)
+        return usuario.map(u -> ResponseEntity.ok(new UsuarioProfileDTO(u)))
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(null));
     }
 
-    // Crear un nuevo usuario
+    // Crear un nuevo usuario (devuelve sin password)
     @PostMapping
-    public ResponseEntity<Usuario> createUsuario(@RequestBody Usuario usuario) {
+    public ResponseEntity<UsuarioProfileDTO> createUsuario(@RequestBody Usuario usuario) {
         try {
             Usuario nuevoUsuario = usuarioService.createOrUpdateUsuario(usuario);
-            return ResponseEntity.status(HttpStatus.CREATED).body(nuevoUsuario);
+            return ResponseEntity.status(HttpStatus.CREATED).body(new UsuarioProfileDTO(nuevoUsuario));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
     }
 
-    // Actualizar un usuario existente (reemplazo total, PUT)
+    // Actualizar un usuario existente (reemplazo total, PUT) (sin password)
     @PutMapping("/{id}")
-    public ResponseEntity<Usuario> updateUsuario(@PathVariable int id, @RequestBody Usuario usuario) {
+    public ResponseEntity<UsuarioProfileDTO> updateUsuario(@PathVariable int id, @RequestBody Usuario usuario) {
         try {
             usuario.setId(id); // Asegurarse de que el ID sea el correcto
             Usuario usuarioActualizado = usuarioService.createOrUpdateUsuario(usuario);
-            return ResponseEntity.ok(usuarioActualizado);
+            return ResponseEntity.ok(new UsuarioProfileDTO(usuarioActualizado));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
     }
 
-    // Actualización parcial de usuario (PATCH)
+    // Actualización parcial de usuario (PATCH) (sin password)
     @PatchMapping("/{id}")
-    public ResponseEntity<Usuario> patchUsuario(@PathVariable int id, @RequestBody Usuario usuarioPatch) {
+    public ResponseEntity<UsuarioProfileDTO> patchUsuario(@PathVariable int id, @RequestBody Usuario usuarioPatch) {
         try {
             Optional<Usuario> usuarioOpt = usuarioService.getUsuarioById(id);
             if (!usuarioOpt.isPresent()) {
@@ -74,18 +105,18 @@ public class UsuarioController {
             if (usuarioPatch.getApellido() != null) usuarioExistente.setApellido(usuarioPatch.getApellido());
             if (usuarioPatch.getRol() != null) usuarioExistente.setRol(usuarioPatch.getRol());
             Usuario usuarioActualizado = usuarioService.createOrUpdateUsuario(usuarioExistente);
-            return ResponseEntity.ok(usuarioActualizado);
+            return ResponseEntity.ok(new UsuarioProfileDTO(usuarioActualizado));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
     }
 
-    // Cambiar la contraseña de un usuario
-    @PutMapping("/{id}/password")
-    public ResponseEntity<String> cambiarPassword(
-            @PathVariable int id,
-            @RequestBody PasswordChangeRequest passwordChangeRequest) {
-        Optional<Usuario> usuarioOpt = usuarioService.getUsuarioById(id);
+    // Cambiar la contraseña del usuario autenticado
+    @PutMapping("/password")
+    public ResponseEntity<String> cambiarPassword(@RequestBody PasswordChangeRequest passwordChangeRequest) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        Optional<Usuario> usuarioOpt = usuarioService.getUsuarioByUsername(username);
         if (!usuarioOpt.isPresent()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado.");
         }
@@ -99,28 +130,48 @@ public class UsuarioController {
         return ResponseEntity.ok("La contraseña fue actualizada correctamente.");
     }
 
-    // Eliminar un usuario por ID (devuelve mensaje de confirmación)
+    // borrar un usuario por ID (devuelve mensaje de confirmacion)
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteUsuario(@PathVariable int id) {
         usuarioService.deleteUsuarioById(id);
         return ResponseEntity.ok("Usuario eliminado correctamente.");
     }
 
-    // Verificar si un usuario existe por nombre de usuario
+    // verificar si un usuario existe por nombre de usuario
     @GetMapping("/exists/username/{username}")
     public ResponseEntity<Boolean> existsByUsername(@PathVariable String username) {
         boolean exists = usuarioService.existsByUsername(username);
         return ResponseEntity.ok(exists);
     }
 
-    // Verificar si un usuario existe por email
+    // verificar si un usuario existe por email
     @GetMapping("/exists/email/{email}")
     public ResponseEntity<Boolean> existsByEmail(@PathVariable String email) {
         boolean exists = usuarioService.existsByEmail(email);
         return ResponseEntity.ok(exists);
     }
 
-    // Endpoint de login (autenticación de usuario)
+    // Obtener usuarios por rol (sin password)
+    @GetMapping("/rol/{rol}")
+    public ResponseEntity<List<UsuarioProfileDTO>> getUsuariosByRol(@PathVariable String rol) {
+        List<Usuario> usuarios = usuarioService.getUsuariosByRol(rol);
+        List<UsuarioProfileDTO> safeUsuarios = usuarios.stream()
+            .map(UsuarioProfileDTO::new)
+            .toList();
+        return ResponseEntity.ok(safeUsuarios);
+    }
+
+    // obtener el usuario autenticado (perfil propio) - SIN password
+    @GetMapping("/me")
+    public ResponseEntity<UsuarioProfileDTO> getAuthenticatedUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        Optional<Usuario> usuarioOpt = usuarioService.getUsuarioByUsername(username);
+        return usuarioOpt.map(u -> ResponseEntity.ok(new UsuarioProfileDTO(u)))
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(null));
+    }
+
+    // endpoint de login (autenticacion de usuario)
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
         Optional<Usuario> usuarioOpt = loginRequest.getUsername() != null
@@ -133,7 +184,8 @@ public class UsuarioController {
         if (!usuario.getPassword().equals(loginRequest.getPassword())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuario o contraseña incorrectos.");
         }
-        // Retornar solo datos públicos (sin contraseña)
+        // Generar JWT
+        String token = jwtUtil.generateToken(usuario.getUsername(), usuario.getRol());
         UsuarioLoginResponse response = new UsuarioLoginResponse(
             usuario.getId(),
             usuario.getUsername(),
@@ -142,6 +194,6 @@ public class UsuarioController {
             usuario.getApellido(),
             usuario.getRol()
         );
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(new LoginJwtResponse(token, response));
     }
 }
