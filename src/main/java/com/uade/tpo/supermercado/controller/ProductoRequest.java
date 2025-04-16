@@ -2,6 +2,8 @@ package com.uade.tpo.supermercado.controller;
 
 import java.math.BigDecimal;
 import java.util.List;
+
+import com.uade.tpo.supermercado.entity.Categoria;
 import com.uade.tpo.supermercado.entity.Imagen;
 
 import lombok.Data;
@@ -13,5 +15,5 @@ public class ProductoRequest {
     private List<String> imagenes;
     private BigDecimal precio;
     private String marca;
-    private int categoria_id;
+    private Categoria categoria;
 }

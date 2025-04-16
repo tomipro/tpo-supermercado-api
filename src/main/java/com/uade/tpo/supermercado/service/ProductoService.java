@@ -14,7 +14,7 @@ import com.uade.tpo.supermercado.excepciones.ProductoNotFoundException;
 public interface ProductoService {
     public Page<Producto> getProductos(PageRequest pageRequest);
     public Optional<Producto> getProductoByName(String nombreProducto);
-    public Optional<Producto> getProductoByCategory(int categoria_id);
+    public Optional<Producto> getProductoByCategory(Categoria categoria);
     public Optional<Producto> getProductoByMarca(String marca);
     public Optional<Producto> getProductoByPrecio(BigDecimal precioMax, BigDecimal precioMin);
     public Optional<Producto> getProductoByPrecioMaximo(BigDecimal precio);
