@@ -62,13 +62,14 @@ public class ProductoController {
     }
 
     @GetMapping("/{categoria}")
-    public ResponseEntity<Producto> getProductoByCategory(@RequestParam int categoria)
+    public ResponseEntity<Producto> getProductoByCategory(@RequestParam Categoria categoria)
             throws ProductoNotFoundException {
         // Se puede obtener el producto por el id de la categoria
         // Si el id de la categoria es menor a 1, se lanza una excepción
         // Si no se encuentra el producto, se lanza una excepción
-        if (categoria < 1)
-            throw new ParametroFueraDeRangoException("El id de la categoría debe ser mayor a 0");
+        // Si la categoria es nula, se lanza una excepción
+        if (categoria.getId() < 1 || categoria == null)
+            throw new ParametroFueraDeRangoException("El id de la categoría debe ser mayor a 0 o la categoría no existe");
         Optional<Producto> result = productoService.getProductoByCategory(categoria);
         if (result.isPresent())
             return ResponseEntity.ok(result.get());
@@ -132,15 +133,15 @@ public class ProductoController {
         if (producto.getPrecio() == null || producto.getPrecio().compareTo(BigDecimal.ZERO) <= 0) {
             throw new ParametroFueraDeRangoException("El precio no puede ser nulo o menor a 0");
         }
-        if (producto.getCategoria_id() < 1) {
-            throw new ParametroFueraDeRangoException("El id de la categoría debe ser mayor a 0");
+        if (producto.getCategoria() == null || producto.getCategoria().getId() < 1) {
+            throw new ParametroFueraDeRangoException("El id de la categoría debe ser mayor a 0 o la categoría no existe");
         }
         Producto result = productoService.createProducto(producto);
         return ResponseEntity.created(URI.create("/productos/" + result.getId())).body(result);
     }
 
     @PutMapping
-    public ResponseEntity<Object> putProducto(@PathVariable int id, @RequestBody ProductoRequest productoRequest)
+    public ResponseEntity<Object> updateProducto(@PathVariable int id, @RequestBody ProductoRequest productoRequest)
             throws ProductoNotFoundException {
         // Se puede actualizar un producto
         // Si el id es menor a 1, se lanza una excepción
@@ -162,9 +163,9 @@ public class ProductoController {
         if (productoRequest.getPrecio() == null || productoRequest.getPrecio().compareTo(BigDecimal.ZERO) <= 0) {
             throw new ParametroFueraDeRangoException("El precio no puede ser nulo o menor a 0");
         }
-        if (productoRequest.getCategoria_id() < 1) {
-            throw new ParametroFueraDeRangoException("El id de la categoría debe ser mayor a 0");
-        }
+        if (productoRequest.getCategoria() == null || productoRequest.getCategoria().getId() < 1) {
+            throw new ParametroFueraDeRangoException("El id de la categoría debe ser mayor a 0 o la categoría no existe");
+        }        
         Optional<Producto> result = productoService.getProductoById(id);
         if (result.isPresent()) {
             productoService.updateProducto(id, productoRequest);
