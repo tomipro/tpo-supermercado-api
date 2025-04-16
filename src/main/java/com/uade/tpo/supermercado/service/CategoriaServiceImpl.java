@@ -13,12 +13,12 @@ import com.uade.tpo.supermercado.excepciones.CategoriaNoEncontrada;
 import com.uade.tpo.supermercado.excepciones.DatoDuplicadoException;
 import com.uade.tpo.supermercado.excepciones.NoEncontradoException;
 import com.uade.tpo.supermercado.excepciones.ParametroFueraDeRangoException;
-import com.uade.tpo.supermercado.repository.CategoryRepository;
+import com.uade.tpo.supermercado.repository.CategoriaRepository;
 
 @Service
 public class CategoriaServiceImpl implements CategoriaService {
     @Autowired
-    private CategoryRepository categoriaRepository;
+    private CategoriaRepository categoriaRepository;
 
     @Override
     public Categoria createCategory(CategoryRequest categoryRequest) {

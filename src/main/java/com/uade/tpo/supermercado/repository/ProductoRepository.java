@@ -17,8 +17,8 @@ public interface ProductoRepository extends JpaRepository<Producto, Integer> {
         @Query(value = "select p from Producto p where p.id = ?1")
         Optional<Producto> findById(int id);
 
-        @Query(value = "select p from Producto p where p.nombreProducto = ?1")
-        Optional<Producto> findByNombreProducto(String nombreProducto);
+        @Query("select p from Producto p where p.nombre = ?1")
+        Optional<Producto> findByNombre(String nombre);
 
         @Query(value = "select p from Producto p where p.marca = ?1")
         Optional<Producto> findByMarca(String marca);
@@ -29,7 +29,7 @@ public interface ProductoRepository extends JpaRepository<Producto, Integer> {
         @Query(value = "select p from Producto p where p.precio >= ?1")
         Optional<Producto> findByPrecioMinimo(BigDecimal precio);
 
-        @Query(value = "select p from producto p where p.precio <= ?1 and p.precio >= ?2")
+        @Query("select p from Producto p where p.precio >= ?2 and p.precio <= ?1")
         Optional<Producto> findByPrecio(BigDecimal precioMax, BigDecimal precioMin);
 
         @Query(value = "select p from Producto p where p.categoria = ?1")

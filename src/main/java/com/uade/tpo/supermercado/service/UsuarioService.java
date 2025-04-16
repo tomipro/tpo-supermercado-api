@@ -52,13 +52,41 @@ public class UsuarioService {
 
     // crear o actualizar un usuario
     public Usuario createOrUpdateUsuario(Usuario usuario) {
-        if (usuarioRepository.existsByUsername(usuario.getUsername())) {
-            throw new IllegalArgumentException("El nombre de usuario ya está en uso.");
+        if (usuario.getId() == 0) {
+            // Crear nuevo usuario
+            if (usuarioRepository.existsByUsername(usuario.getUsername())) {
+                throw new IllegalArgumentException("El nombre de usuario ya está en uso.");
+            }
+            if (usuarioRepository.existsByEmail(usuario.getEmail())) {
+                throw new IllegalArgumentException("El email ya está en uso.");
+            }
+            return usuarioRepository.save(usuario);
+        } else {
+            // Actualizar usuario existente
+            Optional<Usuario> existente = usuarioRepository.findById(usuario.getId());
+            if (!existente.isPresent()) {
+                throw new IllegalArgumentException("Usuario no encontrado con ID: " + usuario.getId());
+            }
+            Usuario usuarioExistente = existente.get();
+            // Validar username/email solo si cambiaron
+            if (!usuarioExistente.getUsername().equals(usuario.getUsername())
+                    && usuarioRepository.existsByUsername(usuario.getUsername())) {
+                throw new IllegalArgumentException("El nombre de usuario ya está en uso.");
+            }
+            if (!usuarioExistente.getEmail().equals(usuario.getEmail())
+                    && usuarioRepository.existsByEmail(usuario.getEmail())) {
+                throw new IllegalArgumentException("El email ya está en uso.");
+            }
+            // Actualizar campos
+            usuarioExistente.setUsername(usuario.getUsername());
+            usuarioExistente.setEmail(usuario.getEmail());
+            usuarioExistente.setPassword(usuario.getPassword());
+            usuarioExistente.setNombre(usuario.getNombre());
+            usuarioExistente.setApellido(usuario.getApellido());
+            usuarioExistente.setRol(usuario.getRol());
+            // No actualizar fecha_registro
+            return usuarioRepository.save(usuarioExistente);
         }
-        if (usuarioRepository.existsByEmail(usuario.getEmail())) {
-            throw new IllegalArgumentException("El email ya está en uso.");
-        }
-        return usuarioRepository.save(usuario);
     }
 
     // borrar un usuario por ID

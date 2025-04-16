@@ -29,8 +29,8 @@ public class ProductoServiceImpl implements ProductoService {
     }
 
     @Override
-    public Optional<Producto> getProductoByName(String nombreProducto) {
-        return productoRepository.findByNombreProducto(nombreProducto);
+    public Optional<Producto> getProductoByName(String nombre) {
+        return productoRepository.findByNombre(nombre);
     }
 
     @Override
@@ -74,7 +74,7 @@ public class ProductoServiceImpl implements ProductoService {
         nuevoProducto.setDescripcion(productoRequest.getDescripcion());
         nuevoProducto.setMarca(productoRequest.getMarca());
         nuevoProducto.setPrecio(productoRequest.getPrecio());
-        nuevoProducto.setCategoria_id(productoRequest.getCategoria_id());
+        // nuevoProducto.setCategoria_id(productoRequest.getCategoria_id());
         // agregamos las imagenes
         List<Imagen> imagenes = new ArrayList<>();
         for (String imagenUrl : productoRequest.getImagenes()) {
@@ -99,7 +99,7 @@ public class ProductoServiceImpl implements ProductoService {
             producto.setDescripcion(productoRequest.getDescripcion());
             producto.setMarca(productoRequest.getMarca());
             producto.setPrecio(productoRequest.getPrecio());
-            producto.setCategoria_id(productoRequest.getCategoria_id());
+            // producto.setCategoria_id(productoRequest.getCategoria_id());
             // Actualiza las imágenes
             List<Imagen> imagenes = new ArrayList<>();
             for (String imagenUrl : productoRequest.getImagenes()) {
