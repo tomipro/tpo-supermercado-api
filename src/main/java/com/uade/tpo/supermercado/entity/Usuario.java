@@ -1,12 +1,16 @@
 package com.uade.tpo.supermercado.entity;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import lombok.Data;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 @Entity
 @Data
 public class Usuario  {
@@ -35,6 +39,10 @@ public class Usuario  {
 
     @Column(nullable = false,columnDefinition = "DATETIME DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime fecha_registro;
+
+    @OneToMany(mappedBy = "usuario", cascade = jakarta.persistence.CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<Direccion> direcciones;
 
     public Usuario(){
         this.fecha_registro = LocalDateTime.now(); // auto asigna la fecha y hora actual

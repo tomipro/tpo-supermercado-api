@@ -10,6 +10,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.Data;
+import com.uade.tpo.supermercado.entity.Direccion;
 
 @Entity
 @Data
@@ -31,8 +32,9 @@ public class Orden {
     @Column(length = 20)
     private String estado;
 
-    @Column(length = 50)
-    private String direccion;
+    @ManyToOne
+    @JoinColumn(name = "direccion_id")
+    private Direccion direccionEnvio; // Si es null, es retiro en tienda
 
     @Column(nullable = false, precision = 10, scale = 2, columnDefinition = "DECIMAL(10,2) DEFAULT 0")
     private BigDecimal descuentoTotal;
@@ -41,13 +43,13 @@ public class Orden {
 
     }
 
-    public Orden(Usuario usuario, BigDecimal total, LocalDateTime fecha, String estado, String direccion,
+    public Orden(Usuario usuario, BigDecimal total, LocalDateTime fecha, String estado, Direccion direccionEnvio,
             BigDecimal descuentoTotal) {
         this.usuario = usuario;
         this.total = total;
         this.fecha = fecha;
         this.estado = estado;
-        this.direccion = direccion;
+        this.direccionEnvio = direccionEnvio;
         this.descuentoTotal = descuentoTotal;
     }
 
