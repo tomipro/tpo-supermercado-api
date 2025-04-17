@@ -6,8 +6,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @ResponseStatus(code = HttpStatus.BAD_REQUEST, reason = "El producto que se intenta agregar esta duplicado.")
 public class ProductoDuplicateException extends Exception{
 
-    public ProductoDuplicateException() {
-        super("El producto que se intenta agregar esta duplicado.");
+    public ProductoDuplicateException(String message) {
+        super(message);
     }
     
 }

@@ -49,4 +49,6 @@ public interface ProductoRepository extends JpaRepository<Producto, Integer> {
         Producto updateProducto(String nombreProducto, String descripcion,
                         String marca, BigDecimal precio, Categoria categoria, int id);
 
+        Producto findProductoById(int id);
+
 }
