@@ -18,28 +18,23 @@ public class Carrito {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
- 
-
-    @Column(nullable = false,columnDefinition = "DATETIME DEFAULT CURRENT_TIMESTAMP")
+    @Column(nullable = false, columnDefinition = "DATETIME DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime fecha_creacion;
 
     @OneToOne
-    @JoinColumn(name="usuario_id",referencedColumnName = "id",nullable = false)
+    @JoinColumn(name = "usuario_id", referencedColumnName = "id", nullable = false)
     private Usuario usuario;
 
+    @Column(nullable = false)
+    private String estado;// Activo o Inactivo
 
-    public Carrito(){
+    public Carrito() {
 
     }
-
 
     public Carrito(LocalDateTime fecha_creacion, Usuario usuario) {
         this.fecha_creacion = fecha_creacion;
         this.usuario = usuario;
     }
 
-    
-
-
-    
 }
