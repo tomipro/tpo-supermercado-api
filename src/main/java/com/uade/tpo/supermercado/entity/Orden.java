@@ -9,8 +9,9 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import lombok.Data;
-import com.uade.tpo.supermercado.entity.Direccion;
+import java.util.List;
 
 @Entity
 @Data
@@ -38,6 +39,9 @@ public class Orden {
 
     @Column(nullable = false, precision = 10, scale = 2, columnDefinition = "DECIMAL(10,2) DEFAULT 0")
     private BigDecimal descuentoTotal;
+
+    @OneToMany(mappedBy = "orden")
+    private List<DetalleOrden> itemsOrden;
 
     public Orden() {
 

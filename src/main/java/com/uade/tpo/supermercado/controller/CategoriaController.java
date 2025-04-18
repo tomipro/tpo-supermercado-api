@@ -19,7 +19,6 @@ import com.uade.tpo.supermercado.excepciones.DatoDuplicadoException;
 import com.uade.tpo.supermercado.excepciones.NoEncontradoException;
 import com.uade.tpo.supermercado.excepciones.ParametroFueraDeRangoException;
 import java.util.Optional;
-import java.util.List;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 
@@ -29,26 +28,12 @@ public class CategoriaController {
     @Autowired
     private CategoriaService categoriaService;
 
-    /**
-     * Endpoint para obtener una lista paginada de categorías.
-     *
-     * @param page Número de página (debe ser mayor o igual a 1). Opcional.
-     * @param size Cantidad de elementos por página (debe ser mayor o igual a 1).
-     *             Opcional.
-     * @return Una respuesta HTTP con el contenido de la página solicitada o con
-     *         todas las categorías si no se especifica paginación.
-     * @throws ParametroFueraDeRangoException si los parámetros de paginación son
-     *                                        inválidos.
-     * @throws NoEncontradoException          si no existen categorías cargadas en
-     *                                        el sistema.
-     *
-     *                                        Ejemplos de uso:
-     *                                        • GET /Categorias → retorna todas las
-     *                                        categorías
-     *                                        • GET /Categorias?page=1&size=10 →
-     *                                        retorna la página 1 con 10 categorías
-     *                                        por página
-     */
+    // Este método maneja la solicitud GET para obtener una lista de categorías.
+    // Ejemplos de uso:
+    // • GET /Categorias → retorna todas las
+    // • GET /Categorias?page=1&size=10 → retorna la página 1 con 10 categorías por
+    // pagina
+
     @GetMapping
     public ResponseEntity<Page<Categoria>> getCategorias(
             @RequestParam(required = false) Integer page,
@@ -80,19 +65,9 @@ public class CategoriaController {
         return ResponseEntity.ok(categorias);
     }
 
-    /**
-     * Obtiene una categoría específica a partir de su identificador único.
-     *
-     * @param categoriaID El ID numérico de la categoría a buscar (por ejemplo: 5).
-     * @return ResponseEntity con la categoría encontrada (código 200 OK) o lanza
-     *         una excepción si no existe.
-     * @throws NoEncontradoException si no se encuentra ninguna categoría con el ID
-     *                               proporcionado.
-     *
-     *                               Ejemplo de uso:
-     *                               • GET /Categoria/5 → retorna la categoría con
-     *                               ID 5, si existe.
-     */
+    // Este método maneja la solicitud GET para obtener una categoría por su ID.
+    // Ejemplo de uso:
+    // • GET /Categorias/5 → retorna la categoría con ID 5, si existe.
     @GetMapping("/{categoriaID}")
     public ResponseEntity<Categoria> getCategoriaById(@PathVariable int categoriaID) {
         Optional<Categoria> result = categoriaService.getCategoriaById(categoriaID);
@@ -110,20 +85,10 @@ public class CategoriaController {
         return ResponseEntity.ok(result.get());
     }
 
-    /**
-     * Crea una nueva categoría.
-     * 
-     * '@'param categoryRequest Objeto con los datos de la nueva categoría (nombre y
-     * ID del padre opcional)
-     * '@'return La categoría creada (201 Created) o error si hay datos inválidos
-     * 
-     * Validaciones:
-     * • El nombre no puede estar vacío
-     * • Si se proporciona un ID de padre, debe existir
-     * • No puede haber otra categoría con el mismo nombre y padre
-     * 
-     * Ejemplo: POST /api/categorias
-     */
+    // Este método maneja la solicitud POST para crear una nueva categoría.
+    // Ejemplo de uso:
+    // • POST /Categorias → crea una nueva categoría con los datos proporcionados en
+
     @PostMapping
     public ResponseEntity<Object> createCategory(
             @RequestBody com.uade.tpo.supermercado.entity.dto.CategoryRequest categoryRequest) {
@@ -161,6 +126,9 @@ public class CategoriaController {
     }
 
     // Este método maneja la solicitud DELETE para eliminar todas las categorías.
+    // Ejemplo de uso:
+    // • DELETE /Categorias → elimina todas las categorías.
+
     @DeleteMapping
     public ResponseEntity<Void> deleteAllCategories() {
         // Comprobar si existen categorías
@@ -175,9 +143,11 @@ public class CategoriaController {
         return ResponseEntity.noContent().build();
     }
 
-    // Este método maneja la solicitud DELETE para eliminar una categoría por su ID,
-    // incluyendo la eliminación de todas sus subcategorías si es una categoría
-    // padre.
+    // Este método maneja la solicitud DELETE para eliminar una categoría por su ID.
+    // Ejemplo de uso:
+    // • DELETE /Categorias/5 → elimina la categoría con ID 5, si existe.
+    // Si la categoría tiene hijos, se eliminarán automáticamente
+
     @DeleteMapping("/{categoriaID}")
     public ResponseEntity<Void> deleteCategoryById(@PathVariable int categoriaID) {
         Optional<Categoria> categoria = categoriaService.getCategoriaById(categoriaID);
@@ -192,9 +162,10 @@ public class CategoriaController {
 
     }
 
-    // ACTUALIZAR CATEGORIA
-
     // Este método maneja la solicitud PUT para actualizar una categoría por su ID.
+    // Ejemplo de uso:
+    // • PUT /Categorias/5 → actualiza la categoría con ID 5, si existe.
+    // Si la categoría tiene hijos, se eliminarán automáticamente
     @PutMapping("/{categoriaID}")
     public ResponseEntity<Categoria> updateCategory(@PathVariable int categoriaID,
             @RequestBody com.uade.tpo.supermercado.entity.dto.CategoryRequest categoryRequest) {
