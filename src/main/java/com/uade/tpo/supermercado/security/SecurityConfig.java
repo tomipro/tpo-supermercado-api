@@ -33,6 +33,16 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/categorias/*").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/categorias/*").hasAuthority("ADMIN")
 
+                        // Endpoints protegidos de Carrito(Solo Usuario y ADMIN)
+                        .requestMatchers(HttpMethod.POST, "/carritos/usuarios/*").hasAnyAuthority("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/carritos/usuarios/*").hasAnyAuthority("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/carritos/usuario/*/productos/*")
+                        .hasAnyAuthority("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/carritos/usuarios/*/productos/*")
+                        .hasAnyAuthority("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/carritos/usuarios/*/vaciar")
+                        .hasAnyAuthority("USER", "ADMIN")
+
                         .requestMatchers("/admin/**").hasAuthority("ADMIN")
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));

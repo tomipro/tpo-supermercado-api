@@ -22,7 +22,7 @@ public class CarritoController {
 
     // post para crear carrito
     @PostMapping("/usuarios/{usuarioid}/crearCarrito")
-    public ResponseEntity<CarritoResponse> crearCarrito(@PathVariable int id) {
+    public ResponseEntity<CarritoResponse> crearCarrito(@PathVariable("usuarioid") int id) {
         Carrito nuevoCarrito = carritoService.crearCarrito(id);
         return ResponseEntity
                 .created(URI.create("/carritos/" + nuevoCarrito.getId()))
@@ -31,7 +31,7 @@ public class CarritoController {
 
     // GET: obtener carrito por usuario
     @GetMapping("/usuarios/{usuarioid}")
-    public ResponseEntity<CarritoResponse> obtenerCarrito(@PathVariable int usuarioid) {
+    public ResponseEntity<CarritoResponse> obtenerCarrito(@PathVariable("usuarioid") int usuarioid) {
         Carrito carrito = carritoService.obtenerCarrito(usuarioid);
         return ResponseEntity.ok(carritoService.convertirACarritoResponse(carrito));
     }
@@ -48,14 +48,15 @@ public class CarritoController {
 
     // DELETE: eliminar producto del carrito
     @DeleteMapping("/usuarios/{usuarioid}/productos/{productoId}")
-    public ResponseEntity<CarritoResponse> eliminarProducto(@PathVariable int id, @PathVariable int productoId) {
+    public ResponseEntity<CarritoResponse> eliminarProducto(@PathVariable("usuarioid") int id,
+            @PathVariable int productoId) {
         Carrito carritoActualizado = carritoService.eliminarProducto(id, productoId);
         return ResponseEntity.ok(carritoService.convertirACarritoResponse(carritoActualizado));
     }
 
     // DELETE: vaciar todo el carrito
     @DeleteMapping("/usuarios/{usuarioid}/vaciar")
-    public ResponseEntity<CarritoResponse> vaciarCarrito(@PathVariable int id) {
+    public ResponseEntity<CarritoResponse> vaciarCarrito(@PathVariable("usuarioid") int id) {
         Carrito carritoVaciado = carritoService.vaciarCarrito(id);
         return ResponseEntity.ok(carritoService.convertirACarritoResponse(carritoVaciado));
     }
