@@ -93,7 +93,7 @@ public class ProductoServiceImpl implements ProductoService {
     @Override
     public Producto updateProducto(int id, ProductoRequest productoRequest)
             throws ProductoNotFoundException {
-        Producto producto= productoRepository.findProductoById(id);
+        Producto producto= productoRepository.findById(id).get();
         producto.setNombre(productoRequest.getNombre());
         producto.setDescripcion(productoRequest.getDescripcion());
         producto.setMarca(productoRequest.getMarca());
