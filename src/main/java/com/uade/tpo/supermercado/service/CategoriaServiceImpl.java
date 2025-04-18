@@ -100,14 +100,8 @@ public class CategoriaServiceImpl implements CategoriaService {
         if (id < 1) {
             throw new ParametroFueraDeRangoException("El ID de la categoría debe ser mayor o igual a 1.");
         }
-
         // Obtener la categoría por ID
         Optional<Categoria> categoria = categoriaRepository.findById(id);
-
-        // Si no se encuentra la categoría, lanzamos una excepción
-        if (!categoria.isPresent()) {
-            throw new CategoriaNoEncontrada("La categoría con ID " + id + " no se encuentra.");
-        }
 
         return categoria;
 

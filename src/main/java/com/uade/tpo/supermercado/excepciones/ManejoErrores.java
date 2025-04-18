@@ -16,7 +16,8 @@ public class ManejoErrores {
     // Maneja NoEncontradoException
     @ExceptionHandler(NoEncontradoException.class)
     public ResponseEntity<String> manejarNoEncontrado(NoEncontradoException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+        System.out.println("Excepción capturada: " + ex.getMessage());
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
     }
 
     // Maneja DatoDuplicadoException

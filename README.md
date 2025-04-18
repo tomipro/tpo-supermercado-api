@@ -244,3 +244,120 @@ Elimina una dirección (solo si pertenece al usuario).
 - Si la contraseña no cumple con los requisitos, recibirás 400 Bad Request.
 - Si el token es inválido o ha expirado, recibirás 401 Unauthorized.
 - 
+--------------------------------------------------------------------------------
+
+## Endpoints de Categoría
+
+### Autenticación y permisos
+
+- El usuario o No usuario puede consultar categorías, pero no puede modificarlas.
+- Solo el administrador puede crear, editar o eliminar categorías.
+
+## Modelo de solicitud
+
+### `CategoryRequest`
+- nombre: nombre de la categoría (String)
+- parentId: ID de la categoría padre (Integer) - puede ser null si es una categoria principal.
+
+### Endpoints:
+   
+    ==========
+
+### GET /categorias
+---------------
+Lista todas las categorías y subcategorías.
+
+Acceso: ADMIN, USER y NoUser
+
+Query params opcionales:
+- page (int): número de página (default: 0)
+- size (int): cantidad de elementos por página (default: 10)
+
+//categorias?page=0&size=5 o //categorias
+Response:
+[
+  {
+    "id": 1,
+    "nombre": "Bebidas",
+    "subcategorias": [
+      {
+        "id": 2,
+        "nombre": "Gaseosas"
+      }
+    ]
+  }
+]
+
+--------------------
+### GET /categorias/{id}
+---------------------
+### Obtiene una categoría por ID.
+
+Acceso: ADMIN, USER y NoUser
+
+Response:
+{
+  "id": 1,
+  "nombre": "Alimentos",
+  "subcategorias": [
+    {
+      "id": 5,
+      "nombre": "Pastas"
+    }
+  ]
+}
+
+Errores:
+- 404 Not Found: Categoría inexistente.
+
+---
+
+### POST /categorias
+----------------
+Crea una nueva categoría o subcategoría.
+
+Acceso: Solo ADMIN
+
+Request:
+{
+  "nombre": "Lácteos",
+  "parentId": null
+}
+
+Response:
+{
+  "id": 3,
+  "nombre": "Lácteos",
+  "parent": null
+}
+
+Validaciones:
+- parentId debe referenciar una categoría válida.
+- El nombre no puede repetirse al mismo nivel.
+
+Errores:
+- 409 Conflict: Ya existe una categoría con ese nombre.
+---
+
+#### PUT /categorias/{id}
+---------------------
+### Reemplaza completamente una categoría existente.
+
+Acceso: Solo ADMIN
+
+Request:
+{
+  "nombre": "Snacks",
+  "parentId": null
+}
+
+Response:
+{
+  "id": 4,
+  "nombre": "Snacks",
+  "parent": null
+}
+
+Errores: No existe la categoria que se quiere actualizar
+---
+

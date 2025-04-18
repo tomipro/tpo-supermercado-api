@@ -51,7 +51,7 @@ public class CategoriaController {
         }
 
         // Validación de parámetros de entrada
-        if (page < 1 || size < 1) {
+        if (page < 0 || size < 1) {
             throw new ParametroFueraDeRangoException("Los parámetros 'page' y 'size' deben ser mayores o iguales a 1.");
         }
 
@@ -139,8 +139,10 @@ public class CategoriaController {
         // Si hay categorías, las eliminamos
         categoriaService.deleteAllCategories();
 
-        // Devolver una respuesta sin contenido, indicando que la operación fue exitosa
+        // Devolver una respuesta sin contenido y con un mensaje, indicando que la
+        // operación fue exitosa!
         return ResponseEntity.noContent().build();
+
     }
 
     // Este método maneja la solicitud DELETE para eliminar una categoría por su ID.
