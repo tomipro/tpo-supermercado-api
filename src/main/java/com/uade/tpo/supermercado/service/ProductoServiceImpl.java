@@ -28,6 +28,7 @@ public class ProductoServiceImpl implements ProductoService {
 
     @Override
     public Page<Producto> getProductos(PageRequest pageRequest) {
+        
         return productoRepository.findAll(pageRequest);
     }
 

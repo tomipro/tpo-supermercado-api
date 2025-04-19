@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.uade.tpo.supermercado.controller.dto.ProductoDTO;
 import com.uade.tpo.supermercado.entity.Categoria;
 import com.uade.tpo.supermercado.entity.Producto;
 import com.uade.tpo.supermercado.excepciones.*;
@@ -27,7 +28,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import java.time.LocalDate;
 
 @RestController
-@RequestMapping("Producto")
+@RequestMapping("producto")
 public class ProductoController {
     
     @Autowired
@@ -183,7 +184,7 @@ public class ProductoController {
             }
         }
         Producto result = productoService.createProducto(producto);
-        return ResponseEntity.created(URI.create("/productos/" + result.getId())).body(result);
+        return ResponseEntity.created(URI.create("/productos/" + result.getId())).body(new ProductoDTO(result));
     }
 
     @PutMapping
@@ -236,7 +237,8 @@ public class ProductoController {
         Optional<Producto> result = productoService.getProductoById(id);
         if (result.isPresent()) {
             productoService.updateProducto(id, productoRequest);
-            return ResponseEntity.ok(result.get());
+            Producto updatedProducto = productoService.getProductoById(id).get();
+            return ResponseEntity.ok(new ProductoDTO(updatedProducto));
         }
         // Si no se encuentra el producto, se lanza una excepción
         throw new ProductoNotFoundException("No se encontró el producto con id: " + id);
