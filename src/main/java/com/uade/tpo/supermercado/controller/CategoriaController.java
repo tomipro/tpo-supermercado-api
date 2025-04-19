@@ -130,7 +130,7 @@ public class CategoriaController {
     // • DELETE /Categorias → elimina todas las categorías.
 
     @DeleteMapping
-    public ResponseEntity<Void> deleteAllCategories() {
+    public ResponseEntity<String> deleteAllCategories() {
         // Comprobar si existen categorías
         if (categoriaService.countCategorias() == 0) {
             throw new NoEncontradoException("No hay categorías para eliminar.");
@@ -139,9 +139,8 @@ public class CategoriaController {
         // Si hay categorías, las eliminamos
         categoriaService.deleteAllCategories();
 
-        // Devolver una respuesta sin contenido y con un mensaje, indicando que la
         // operación fue exitosa!
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok("Todas las categorías fueron eliminadas correctamente.");
 
     }
 
@@ -151,7 +150,7 @@ public class CategoriaController {
     // Si la categoría tiene hijos, se eliminarán automáticamente
 
     @DeleteMapping("/{categoriaID}")
-    public ResponseEntity<Void> deleteCategoryById(@PathVariable int categoriaID) {
+    public ResponseEntity<String> deleteCategoryById(@PathVariable int categoriaID) {
         Optional<Categoria> categoria = categoriaService.getCategoriaById(categoriaID);
         if (!categoria.isPresent()) {
             throw new NoEncontradoException("La categoría con ID " + categoriaID + " no se encuentra.");
@@ -160,7 +159,7 @@ public class CategoriaController {
         // Borrá directamente y dejá que cascade se encargue
         categoriaService.deleteCategory(categoriaID);
 
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok("La categoría con ID " + categoriaID + " fue eliminada exitosamente.");
 
     }
 
