@@ -361,3 +361,248 @@ Response:
 Errores: No existe la categoria que se quiere actualizar
 ---
 
+## Endpoints de Carrito
+> Todos los endpoints requieren autenticación JWT.  
+> Agregar header: `Authorization: Bearer {token}` (setear en Postman o Insomnia).
+
+### Reglas de Acceso
+- Solo usuarios autenticados (USER) y administradores (ADMIN) pueden acceder.
+- Cada usuario solo puede acceder a su propio carrito.
+- El carrito se crea automáticamente al realizar la primera operación.
+- Los carritos inactivos por más de 6 horas se vacían automáticamente.
+
+### Estados del Carrito
+- `VACIO`: Carrito sin productos.
+- `ACTIVO`: Carrito con al menos un producto.
+
+---
+
+### POST /carritos
+Crea un nuevo carrito vacío para el usuario autenticado.
+#### Response:
+```json
+{
+  "id": 1,
+  "usuarioId": 5,
+  "estado": "VACIO",
+  "items": []
+}
+```
+### GET /carritos
+Obtiene el carrito del usuario autenticado. Si no existe, crea uno vacío.
+
+### Response:
+```json
+{
+  "id": 1,
+  "usuarioId": 5,
+  "estado": "ACTIVO",
+  "items": [
+    {
+      "productoId": 10,
+      "nombre": "Leche",
+      "cantidad": 2,
+      "precio": 120.50
+    },
+    {
+      "productoId": 15,
+      "nombre": "Pan",
+      "cantidad": 1,
+      "precio": 80.00
+    }
+  ]
+}
+```
+
+### PATCH /carritos/{productoId}
+Agrega un producto al carrito o incrementa su cantidad.
+Parametros: (Opcional, default=1) Cantidad a agregar
+### Response
+'''json
+{
+  "id": 1,
+  "usuarioId": 5,
+  "estado": "ACTIVO",
+  "items": [
+    {
+      "productoId": 10,
+      "nombre": "Leche",
+      "cantidad": 3,
+      "precio": 120.50
+    }
+  ]
+}
+'''
+### DELETE /carritos/{productoId}
+Elimina o reduce la cantidad de un producto del carrito.
+Parámetros: cantidad, (Opcional, default=1) Cantidad a eliminar.
+
+'''json
+{
+  "id": 1,
+  "usuarioId": 5,
+  "estado": "ACTIVO",
+  "items": [
+    {
+      "productoId": 10,
+      "nombre": "Leche",
+      "cantidad": 1,
+      "precio": 120.50
+    }
+  ]
+}
+
+'''
+
+### DELETE /carritos
+Vacía completamente el carrito del usuario.
+
+Response:
+'''json
+{
+  "id": 1,
+  "usuarioId": 5,
+  "estado": "VACIO",
+  "items": []
+}
+
+
+'''
+### Validaciones y Errores
+Producto no encontrado: 404 Not Found
+
+Stock insuficiente: 400 Bad Request
+
+Cantidad inválida (≤0): 400 Bad Request
+
+Producto desactivado: 400 Bad Request
+
+Carrito ya existe: 409 Conflict
+
+Carrito vacío: 400 Bad Request (al intentar eliminar productos)
+
+### Extra:
+Los precios se mantienen fijos al momento de agregar al carrito
+
+El sistema valida stock suficiente antes de agregar productos
+
+No se pueden agregar productos desactivados
+
+El usuario solo puede modificar su propio carrito
+
+Los administradores pueden acceder a todos los carritos
+-----------
+## Endpoints de Orden  
+> Todos los endpoints requieren autenticación JWT.  
+> Agregar header: `Authorization: Bearer {token}` (setear en Postman o Insomnia).  
+
+### Reglas de Acceso  
+- Solo usuarios autenticados (USER) y administradores (ADMIN) pueden acceder.  
+- Cada usuario solo puede acceder a sus propias órdenes.  
+- Las órdenes se crean al finalizar la compra del carrito.  
+- El stock se actualiza automáticamente al crear una orden.  
+
+### Estados de Orden  
+- `FINALIZADA`: Orden completada y pagada.  
+
+### POST /ordenes  
+Finaliza la compra del carrito activo y crea una nueva orden.  
+#### Response:  
+```json  
+{  
+  "id": 1,  
+  "usuarioId": 5,  
+  "fecha": "2024-05-15T14:30:00",  
+  "estado": "FINALIZADA",  
+  "total": 320.50,  
+  "items": [  
+    {  
+      "productoId": 10,  
+      "nombreProducto": "Leche",  
+      "cantidad": 2,  
+      "precioUnitario": 120.50  
+    },  
+    {  
+      "productoId": 15,  
+      "nombreProducto": "Pan",  
+      "cantidad": 1,  
+      "precioUnitario": 80.00  
+    }  
+  ]  
+}
+```
+### GET /ordenes/usuarios/{id}
+Obtiene todas las órdenes de un usuario específico.
+
+Response:
+'''json
+[  
+  {  
+    "id": 1,  
+    "usuarioId": 5,  
+    "fecha": "2024-05-15T14:30:00",  
+    "estado": "FINALIZADA",  
+    "total": 320.50,  
+    "items": [  
+      {  
+        "productoId": 10,  
+        "nombreProducto": "Leche",  
+        "cantidad": 2,  
+        "precioUnitario": 120.50  
+      }  
+    ]  
+  }  
+]  
+'''
+
+### GET /ordenes/{ordenId}/usuarios/{id}
+Obtiene una orden específica de un usuario.
+
+'''json
+{  
+  "id": 1,  
+  "usuarioId": 5,  
+  "fecha": "2024-05-15T14:30:00",  
+  "estado": "FINALIZADA",  
+  "total": 320.50,  
+  "items": [  
+    {  
+      "productoId": 10,  
+      "nombreProducto": "Leche",  
+      "cantidad": 2,  
+      "precioUnitario": 120.50  
+    }  
+  ]  
+}  
+'''
+
+### Validaciones y Errores
+Carrito vacío: 400 Bad Request (al intentar finalizar compra)
+
+Stock insuficiente: 400 Bad Request
+
+Producto desactivado: 400 Bad Request
+
+Orden no encontrada: 404 Not Found
+
+Usuario no tiene órdenes: 404 Not Found
+
+### Extra:
+El precio de los productos se bloquea al momento de crear la orden
+
+El stock se reduce automáticamente al crear la orden
+
+No se pueden incluir productos desactivados
+
+Las órdenes son inmutables una vez creadas
+
+Los administradores pueden acceder a todas las órdenes
+
+Los usuarios solo pueden ver sus propias órdenes
+
+
+
+
+
+
+
