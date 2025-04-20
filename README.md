@@ -243,8 +243,8 @@ Elimina una dirección (solo si pertenece al usuario).
 - Si el email no es válido, recibirás 400 Bad Request.
 - Si la contraseña no cumple con los requisitos, recibirás 400 Bad Request.
 - Si el token es inválido o ha expirado, recibirás 401 Unauthorized.
-- 
---------------------------------------------------------------------------------
+
+---
 
 ## Endpoints de Categoría
 
@@ -507,6 +507,29 @@ Los administradores pueden acceder a todos los carritos
 
 ### POST /ordenes  
 Finaliza la compra del carrito activo y crea una nueva orden.  
+Ahora permite especificar una dirección de envío o indicar retiro en tienda.
+
+#### Request:
+Para envío a domicilio (con dirección):
+```json
+{
+  "direccionId": 123
+}
+```
+Para retiro en tienda:
+```json
+{
+  "direccionId": null
+}
+```
+O bien, puedes omitir el campo para retiro en tienda:
+```json
+{}
+```
+
+- `direccionId` debe ser el ID de una dirección válida del usuario, o `null` para retiro en tienda.
+- Si la dirección no pertenece al usuario, devuelve 404 Not Found o 403 Forbidden.
+
 #### Response:  
 ```json  
 {  
@@ -531,6 +554,8 @@ Finaliza la compra del carrito activo y crea una nueva orden.
   ]  
 }
 ```
+---
+
 ### GET /ordenes/usuarios/{id}
 Obtiene todas las órdenes de un usuario específico.
 

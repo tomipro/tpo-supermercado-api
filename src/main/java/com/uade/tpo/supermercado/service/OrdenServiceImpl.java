@@ -16,6 +16,7 @@ import com.uade.tpo.supermercado.entity.dto.OrdenResponseDTO;
 import com.uade.tpo.supermercado.excepciones.EstadoInvalidoException;
 import com.uade.tpo.supermercado.excepciones.NoEncontradoException;
 import com.uade.tpo.supermercado.excepciones.StockInsuficienteException;
+import com.uade.tpo.supermercado.service.DireccionService;
 
 @Service
 
@@ -32,8 +33,11 @@ public class OrdenServiceImpl implements OrdenService {
     @Autowired
     private DetalleOrdenRepository detalleOrdenRepository;
 
+    @Autowired
+    private DireccionService direccionService;
+
     @Transactional
-    public Orden finalizarCompra(Usuario usuario) {
+    public Orden finalizarCompra(Usuario usuario, Integer direccionId) {
 
         // 1. Obtener el carrito del usuario
         Carrito carrito = carritoRepository.findByUsuarioIdAndEstado(usuario.getId(), EstadoCarrito.ACTIVO)
@@ -57,13 +61,21 @@ public class OrdenServiceImpl implements OrdenService {
                 .map(item -> item.getProducto().getPrecio().multiply(new BigDecimal(item.getCantidad())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        // 6. Crear la orden
-        Orden orden = new Orden(usuario, totalCompra, LocalDateTime.now(), "FINALIZADA", null, BigDecimal.ZERO);
+        // 6. Obtener la dirección de envío si corresponde
+        Direccion direccionEnvio = null;
+        if (direccionId != null) {
+            direccionEnvio = direccionService.getDireccionById(direccionId)
+                .filter(dir -> dir.getUsuario().getId() == usuario.getId())
+                .orElseThrow(() -> new NoEncontradoException("Dirección no encontrada o no pertenece al usuario"));
+        }
 
-        // 7. Guardar la orden
+        // 7. Crear la orden
+        Orden orden = new Orden(usuario, totalCompra, LocalDateTime.now(), "FINALIZADA", direccionEnvio, BigDecimal.ZERO);
+
+        // 8. Guardar la orden
         ordenRepository.save(orden);
 
-        // 8. Crear los detalles de la orden y actualizar el stock de los productos
+        // 9. Crear los detalles de la orden y actualizar el stock de los productos
         for (ItemCarrito item : carrito.getItemsCarrito()) {
             BigDecimal subtotal = item.getProducto().getPrecio().multiply(new BigDecimal(item.getCantidad()));
 
@@ -79,16 +91,16 @@ public class OrdenServiceImpl implements OrdenService {
             productoRepository.save(producto);
         }
 
-        // 9. Vaciar el carrito
+        // 10. Vaciar el carrito
         carrito.getItemsCarrito().clear();
         carrito.setEstado(EstadoCarrito.VACIO);
 
         carrito.setFechaActivacion(null);
 
-        // 10. Guardar el carrito vacío
+        // 11. Guardar el carrito vacío
         carritoRepository.save(carrito);
 
-        // 11. Devolver la orden
+        // 12. Devolver la orden
         return orden;
 
     }

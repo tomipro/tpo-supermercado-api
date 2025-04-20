@@ -12,6 +12,7 @@ import com.uade.tpo.supermercado.entity.dto.OrdenResponseDTO;
 import com.uade.tpo.supermercado.excepciones.NoEncontradoException;
 
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.security.Principal;
 import java.util.List;
@@ -27,15 +28,22 @@ public class OrdenController {
     @Autowired
     private UsuarioService usuarioService;
 
+    // DTO para finalizar compra
+    public static class FinalizarCompraRequest {
+        public Integer direccionId; // null para retiro en tienda
+    }
+
     // Finalizar compra
     @PostMapping
-    public ResponseEntity<OrdenResponseDTO> finalizarCompra(Principal principal) {
+    public ResponseEntity<OrdenResponseDTO> finalizarCompra(
+            Principal principal,
+            @RequestBody FinalizarCompraRequest request) {
         // Obtener el usuario a partir del token JWT
         String username = principal.getName();
         Usuario usuario = usuarioService.getUsuarioByUsername(username)
                 .orElseThrow(() -> new NoEncontradoException("Usuario no encontrado"));
 
-        Orden orden = ordenService.finalizarCompra(usuario);
+        Orden orden = ordenService.finalizarCompra(usuario, request.direccionId);
         OrdenResponseDTO dto = ordenService.convertirAOrdenResponse(orden);
         return ResponseEntity.ok(dto);
     }
