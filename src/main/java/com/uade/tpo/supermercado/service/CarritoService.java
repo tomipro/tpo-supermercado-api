@@ -17,4 +17,6 @@ public interface CarritoService {
 
     CarritoResponse convertirACarritoResponse(Carrito carrito);
 
+    public void vaciarCarritosAntiguos();
+
 }

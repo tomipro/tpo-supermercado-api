@@ -8,6 +8,7 @@ import com.uade.tpo.supermercado.entity.dto.ItemCarritoDTO;
 import com.uade.tpo.supermercado.excepciones.DatoDuplicadoException;
 import com.uade.tpo.supermercado.excepciones.EstadoInvalidoException;
 import com.uade.tpo.supermercado.excepciones.NoEncontradoException;
+import com.uade.tpo.supermercado.excepciones.ParametroFueraDeRangoException;
 import com.uade.tpo.supermercado.excepciones.StockInsuficienteException;
 import com.uade.tpo.supermercado.repository.CarritoRepository;
 import jakarta.transaction.Transactional;
@@ -15,6 +16,7 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.List;
+import org.springframework.scheduling.annotation.Scheduled;
 
 @Service
 public class CarritoServiceImpl implements CarritoService {
@@ -80,6 +82,15 @@ public class CarritoServiceImpl implements CarritoService {
         // Validar existencia del producto
         Producto producto = productoService.getProductoById(productoId)
                 .orElseThrow(() -> new NoEncontradoException("Producto no encontrado con ID: " + productoId));
+        // validar la cantidad
+        if (cantidad <= 0) {
+            throw new ParametroFueraDeRangoException("La cantidad debe ser mayor a cero.");
+        }
+
+        // Validar que el producto esté activo
+        if (!"activo".equalsIgnoreCase(producto.getEstado())) {
+            throw new EstadoInvalidoException("El producto con ID: " + producto.getId() + " está desactivado.");
+        }
 
         // Validar stock disponible
         if (producto.getStock() - producto.getStock_minimo() < cantidad) {
@@ -110,6 +121,7 @@ public class CarritoServiceImpl implements CarritoService {
         // Si el carrito estaba vacío, cambiar su estado a "ACTIVO"
         if (carrito.getEstado() == EstadoCarrito.VACIO) {
             carrito.setEstado(EstadoCarrito.ACTIVO);
+            carrito.setFechaActivacion(LocalDateTime.now());
         }
 
         // Guardar carrito y devolver
@@ -133,6 +145,10 @@ public class CarritoServiceImpl implements CarritoService {
         if (!itemCarrito.isPresent()) {
             throw new NoEncontradoException("El producto no está en el carrito");
         }
+        // validar la cantidad
+        if (cantidad <= 0) {
+            throw new ParametroFueraDeRangoException("La cantidad debe ser mayor a cero.");
+        }
 
         // 4. Eliminar el producto del carrito
         ItemCarrito item = itemCarrito.get();
@@ -144,6 +160,7 @@ public class CarritoServiceImpl implements CarritoService {
         // 5. Verificar si el carrito está vacío después de la eliminación
         if (carrito.getItemsCarrito().isEmpty()) {
             carrito.setEstado(EstadoCarrito.VACIO);
+            carrito.setFechaActivacion(null); // Limpiar la fecha de activación
         }
 
         // 6. Persistir los cambios
@@ -165,6 +182,8 @@ public class CarritoServiceImpl implements CarritoService {
 
         // 3. Cambiar el estado del carrito a "VACIO"
         carrito.setEstado(EstadoCarrito.VACIO);
+
+        carrito.setFechaActivacion(null); // Limpiar la fecha de activación
 
         // 4. Persistir los cambios
         carritoRepository.save(carrito); // Guardar el carrito vacío en la base de datos
@@ -189,6 +208,24 @@ public class CarritoServiceImpl implements CarritoService {
                 carrito.getEstado().toString(),
                 items);
 
+    }
+
+    @Scheduled(fixedRate = 3600000) // Se ejecuta cada hora (3600000 ms)
+    @Transactional
+    @Override
+    public void vaciarCarritosAntiguos() {
+        LocalDateTime seisHorasAtras = LocalDateTime.now().minusHours(6);
+
+        // Buscar carritos activos que tienen más de 6 horas desde su activación
+        List<Carrito> carritosAntiguos = carritoRepository.findByEstadoAndFechaActivacionBefore(EstadoCarrito.ACTIVO,
+                seisHorasAtras);
+
+        // Vaciar los carritos y actualizar su estado
+        for (Carrito carrito : carritosAntiguos) {
+            carrito.setEstado(EstadoCarrito.VACIO); // Cambiar estado a "VACIO"
+            carrito.getItemsCarrito().clear(); // Eliminar todos los productos del carrito
+            carritoRepository.save(carrito); // Persistir los cambios
+        }
     }
 
 }

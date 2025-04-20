@@ -32,7 +32,6 @@ public class OrdenServiceImpl implements OrdenService {
     @Autowired
     private DetalleOrdenRepository detalleOrdenRepository;
 
-    @Override
     @Transactional
     public Orden finalizarCompra(Usuario usuario) {
 
@@ -47,6 +46,10 @@ public class OrdenServiceImpl implements OrdenService {
                 throw new StockInsuficienteException(
                         "No hay suficiente stock para el producto: " + producto.getNombre());
             }
+            if (!"activo".equalsIgnoreCase(producto.getEstado())) {
+                throw new EstadoInvalidoException("El producto con ID: " + producto.getId() + " está desactivado.");
+            }
+
         }
 
         // 5. Calcular el total de la compra
@@ -79,6 +82,8 @@ public class OrdenServiceImpl implements OrdenService {
         // 9. Vaciar el carrito
         carrito.getItemsCarrito().clear();
         carrito.setEstado(EstadoCarrito.VACIO);
+
+        carrito.setFechaActivacion(null);
 
         // 10. Guardar el carrito vacío
         carritoRepository.save(carrito);

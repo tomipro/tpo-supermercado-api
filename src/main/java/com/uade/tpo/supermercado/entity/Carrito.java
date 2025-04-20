@@ -27,6 +27,9 @@ public class Carrito {
     @Column(nullable = false)
     private LocalDateTime fecha_creacion = LocalDateTime.now();
 
+    @Column(nullable = true)
+    private LocalDateTime fechaActivacion;
+
     @OneToOne
     @JoinColumn(name = "usuario_id", referencedColumnName = "id", nullable = false, unique = true)
     private Usuario usuario;

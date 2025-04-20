@@ -8,7 +8,9 @@ import com.uade.tpo.supermercado.entity.Carrito;
 import com.uade.tpo.supermercado.entity.EstadoCarrito;
 import com.uade.tpo.supermercado.entity.Usuario;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.List;
 
 public interface CarritoRepository extends JpaRepository<Carrito, Integer> {
 
@@ -21,5 +23,7 @@ public interface CarritoRepository extends JpaRepository<Carrito, Integer> {
     @Query("SELECT c FROM Carrito c LEFT JOIN FETCH c.itemsCarrito WHERE c.usuario.id = :usuarioId AND c.estado = :estado")
     Optional<Carrito> findByUsuarioIdAndEstadoConItems(@Param("usuarioId") int usuarioId,
             @Param("estado") EstadoCarrito estado);
+
+    List<Carrito> findByEstadoAndFechaActivacionBefore(EstadoCarrito estado, LocalDateTime fechaLimite);
 
 }
