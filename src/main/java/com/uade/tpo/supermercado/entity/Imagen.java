@@ -1,5 +1,8 @@
 package com.uade.tpo.supermercado.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.annotation.Generated;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -17,12 +20,13 @@ public class Imagen {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-    
+
     @Column
     private String imagen;
 
     @ManyToOne
     @JoinColumn(name = "producto_id", nullable = false)
+    @JsonIgnore // evita la recursividad infinita al serializar la entidad
     private Producto producto;
-    
+
 }

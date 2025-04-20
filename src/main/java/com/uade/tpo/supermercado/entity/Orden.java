@@ -10,8 +10,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.CascadeType;
 import lombok.Data;
 import java.util.List;
+import java.util.ArrayList;
 
 @Entity
 @Data
@@ -40,8 +42,8 @@ public class Orden {
     @Column(nullable = false, precision = 10, scale = 2, columnDefinition = "DECIMAL(10,2) DEFAULT 0")
     private BigDecimal descuentoTotal;
 
-    @OneToMany(mappedBy = "orden")
-    private List<DetalleOrden> itemsOrden;
+    @OneToMany(mappedBy = "orden", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<DetalleOrden> itemsOrden = new ArrayList<>();
 
     public Orden() {
 

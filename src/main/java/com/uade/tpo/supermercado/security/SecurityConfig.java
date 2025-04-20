@@ -41,7 +41,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/productos").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/productos/*").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/productos/*").hasAuthority("ADMIN")
-                        
+
                         // Endpoints protegidos de Carrito(Solo Usuario y ADMIN)
                         .requestMatchers(HttpMethod.POST, "/carritos/usuarios/{usuarioId}")
                         .hasAnyAuthority("USER", "ADMIN")
@@ -52,6 +52,15 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/carritos/usuarios/{usuarioId}/productos/{productoId}")
                         .hasAnyAuthority("USER", "ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/carritos/usuarios/{usuarioId}/vaciar")
+                        .hasAnyAuthority("USER", "ADMIN")
+
+                        // Endpoints protegidos de Orden (solo Usuario y ADMIN)
+                        .requestMatchers(HttpMethod.POST, "/ordenes")
+                        .hasAnyAuthority("USER", "ADMIN")
+                        // Endpoints protegidos de Orden (solo ADMIN)
+                        .requestMatchers(HttpMethod.GET, "/ordenes/usuarios/*")
+                        .hasAnyAuthority("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/ordenes/usuarios/*/ordenes/*")
                         .hasAnyAuthority("USER", "ADMIN")
 
                         .requestMatchers("/admin/**").hasAuthority("ADMIN")

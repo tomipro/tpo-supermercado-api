@@ -13,6 +13,9 @@ import com.uade.tpo.supermercado.repository.ProductoRepository;
 import com.uade.tpo.supermercado.repository.DetalleOrdenRepository;
 import java.util.List;
 import com.uade.tpo.supermercado.entity.dto.OrdenResponseDTO;
+import com.uade.tpo.supermercado.excepciones.EstadoInvalidoException;
+import com.uade.tpo.supermercado.excepciones.NoEncontradoException;
+import com.uade.tpo.supermercado.excepciones.StockInsuficienteException;
 
 @Service
 
@@ -31,24 +34,18 @@ public class OrdenServiceImpl implements OrdenService {
 
     @Override
     @Transactional
-    public Orden finalizarCompra(int usuarioId) {
-        // 1. Validar existencia del usuario
-        Usuario usuario = usuarioService.getUsuarioByIdOrThrow(usuarioId);
+    public Orden finalizarCompra(Usuario usuario) {
 
-        // 2. Obtener el carrito del usuario
-        Carrito carrito = carritoRepository.findByUsuarioIdAndEstado(usuarioId, EstadoCarrito.ACTIVO)
-                .orElseThrow(() -> new IllegalArgumentException("No existe un carrito activo para el usuario"));
+        // 1. Obtener el carrito del usuario
+        Carrito carrito = carritoRepository.findByUsuarioIdAndEstado(usuario.getId(), EstadoCarrito.ACTIVO)
+                .orElseThrow(() -> new EstadoInvalidoException("El carrito esta vacio"));
 
-        // 3. Verificar que el carrito no esté vacío
-        if (carrito.getItemsCarrito().isEmpty()) {
-            throw new IllegalArgumentException("El carrito está vacío, no se puede finalizar la compra.");
-        }
-
-        // 4. Verificar el stock de los productos en el carrito
+        // 2. Verificar el stock de los productos en el carrito
         for (ItemCarrito item : carrito.getItemsCarrito()) {
             Producto producto = item.getProducto();
-            if (producto.getStock() < item.getCantidad()) {
-                throw new IllegalArgumentException("No hay suficiente stock para el producto: " + producto.getNombre());
+            if (producto.getStock() - producto.getStock_minimo() < item.getCantidad()) {
+                throw new StockInsuficienteException(
+                        "No hay suficiente stock para el producto: " + producto.getNombre());
             }
         }
 
@@ -71,6 +68,7 @@ public class OrdenServiceImpl implements OrdenService {
             DetalleOrden detalle = new DetalleOrden(item.getCantidad(), item.getProducto().getPrecio(), subtotal, orden,
                     item.getProducto());
             detalleOrdenRepository.save(detalle);
+            orden.getItemsOrden().add(detalle);
 
             // Actualizar el stock del producto
             Producto producto = item.getProducto();
@@ -92,11 +90,13 @@ public class OrdenServiceImpl implements OrdenService {
 
     @Override
     public Orden obtenerOrden(int usuarioId, int ordenId) {
-        // 1. Validar existencia del usuario
-        Usuario usuario = usuarioService.getUsuarioByIdOrThrow(usuarioId);
+        // 1. Validar existencia del usuario para evitar errores
+        if (usuarioService.getUsuarioById(usuarioId).isEmpty()) {
+            throw new NoEncontradoException("El usuario no existe.");
+        }
         // 2. Buscar la orden
         return ordenRepository.buscarOrdenDeUsuario(ordenId, usuarioId)
-                .orElseThrow(() -> new IllegalArgumentException("No se encontró la orden para este usuario"));
+                .orElseThrow(() -> new NoEncontradoException("No se encontró la orden para este usuario"));
 
     }
 
@@ -108,7 +108,7 @@ public class OrdenServiceImpl implements OrdenService {
         List<Orden> ordenes = ordenRepository.findByUsuario(usuario);
         // 3. Verificar que el usuario tenga ordenes
         if (ordenes.isEmpty()) {
-            throw new IllegalArgumentException("El usuario no tiene ordenes.");
+            throw new NoEncontradoException("El usuario no tiene ordenes.");
         }
         // 4. Devolver las ordenes
         return ordenes;

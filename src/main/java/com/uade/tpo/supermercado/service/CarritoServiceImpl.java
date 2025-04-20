@@ -82,7 +82,7 @@ public class CarritoServiceImpl implements CarritoService {
                 .orElseThrow(() -> new NoEncontradoException("Producto no encontrado con ID: " + productoId));
 
         // Validar stock disponible
-        if (producto.getStock_minimo() < cantidad) {
+        if (producto.getStock() - producto.getStock_minimo() < cantidad) {
             throw new StockInsuficienteException("No hay suficiente stock para el producto con ID: " + productoId);
         }
 

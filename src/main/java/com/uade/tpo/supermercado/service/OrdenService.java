@@ -1,11 +1,12 @@
 package com.uade.tpo.supermercado.service;
 
+import java.security.Principal;
 import java.util.List;
 import com.uade.tpo.supermercado.entity.*;
 import com.uade.tpo.supermercado.entity.dto.OrdenResponseDTO;
 
 public interface OrdenService {
-    Orden finalizarCompra(int usuarioId); // Método para finalizar la compra y crear una orden
+    Orden finalizarCompra(Usuario usuario); // Método para finalizar la compra y crear una orden
 
     Orden obtenerOrden(int usuarioId, int ordenId); // Método para obtener una orden específica de un usuario
 

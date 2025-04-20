@@ -35,7 +35,7 @@ public class Carrito {
     @Column(nullable = false, name = "estado")
     private EstadoCarrito estado;
 
-    @OneToMany(mappedBy = "carrito", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "carrito", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<ItemCarrito> itemsCarrito = new ArrayList<>(); // Lista de los items del carrito
 
     public Carrito() {

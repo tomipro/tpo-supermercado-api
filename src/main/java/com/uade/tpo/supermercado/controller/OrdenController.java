@@ -7,10 +7,16 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.uade.tpo.supermercado.entity.Orden;
+import com.uade.tpo.supermercado.entity.Usuario;
 import com.uade.tpo.supermercado.entity.dto.OrdenResponseDTO;
+import com.uade.tpo.supermercado.excepciones.NoEncontradoException;
+
 import org.springframework.web.bind.annotation.GetMapping;
+
+import java.security.Principal;
 import java.util.List;
 import com.uade.tpo.supermercado.service.OrdenService;
+import com.uade.tpo.supermercado.service.UsuarioService;
 
 @RestController
 @RequestMapping("ordenes")
@@ -18,10 +24,18 @@ public class OrdenController {
     @Autowired
     private OrdenService ordenService;
 
-    // finalizar compra
-    @PostMapping("/usuarios/{id}/finalizar")
-    public ResponseEntity<OrdenResponseDTO> finalizarCompra(@PathVariable int id) {
-        Orden orden = ordenService.finalizarCompra(id);
+    @Autowired
+    private UsuarioService usuarioService;
+
+    // Finalizar compra
+    @PostMapping
+    public ResponseEntity<OrdenResponseDTO> finalizarCompra(Principal principal) {
+        // Obtener el usuario a partir del token JWT
+        String username = principal.getName();
+        Usuario usuario = usuarioService.getUsuarioByUsername(username)
+                .orElseThrow(() -> new NoEncontradoException("Usuario no encontrado"));
+
+        Orden orden = ordenService.finalizarCompra(usuario);
         OrdenResponseDTO dto = ordenService.convertirAOrdenResponse(orden);
         return ResponseEntity.ok(dto);
     }
