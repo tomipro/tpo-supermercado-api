@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.uade.tpo.supermercado.controller.dto.ProductoDTO;
 import com.uade.tpo.supermercado.entity.Categoria;
 import com.uade.tpo.supermercado.entity.Producto;
 import com.uade.tpo.supermercado.excepciones.*;
@@ -27,7 +28,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import java.time.LocalDate;
 
 @RestController
-@RequestMapping("Producto")
+@RequestMapping("producto")
 public class ProductoController {
 
     @Autowired
@@ -36,25 +37,43 @@ public class ProductoController {
     private CategoriaService categorias;
 
     @GetMapping
-    public ResponseEntity<Page<Producto>> getProductos(
+    public ResponseEntity<Page<ProductoDTO>> getProductos(
             @RequestParam(required = false) Integer page,
             @RequestParam(required = false) Integer size) throws ProductoNotFoundException {
         // Se puede obtener una lista paginada de productos
-        if (page == null || size == null)
+        if (page == null || size == null) {
             // Si no se proporciona paginación, se devuelven todos los productos
-            return ResponseEntity.ok(productoService.getProductos(PageRequest.of(0, Integer.MAX_VALUE)));
-        else if (productoService.getProductos(PageRequest.of(page, size)).isEmpty())
+            Page<Producto> productos = productoService.getProductos(PageRequest.of(0, Integer.MAX_VALUE));
+            Page<ProductoDTO> productosDTO = productos.map(ProductoDTO::new);
+            return ResponseEntity.ok(productosDTO);
+        } else if (productoService.getProductos(PageRequest.of(page, size)).isEmpty())
             // Si no se encuentra ningún producto, se lanza una excepción
             throw new ProductoNotFoundException("No hay productos cargados en el sistema");
         else if (page < 1 || size < 0)
             // Si la página o el tamaño son menores a 1, se lanza una excepción
             throw new ParametroFueraDeRangoException("Los parámetros de paginación deben ser mayores a 0");
-        else
-            return ResponseEntity.ok(productoService.getProductos(PageRequest.of(page, size)));
+        else {
+            Page<Producto> productos = productoService.getProductos(PageRequest.of(page, size));
+            Page<ProductoDTO> productosDTO = productos.map(ProductoDTO::new);
+            return ResponseEntity.ok(productosDTO);
+        }
     }
 
-    @GetMapping("/{nombreProducto}")
-    public ResponseEntity<Producto> getProductoByName(@RequestParam String nombreProducto)
+    @GetMapping("/id/{id}")
+    public ResponseEntity<ProductoDTO> getProductoById(@PathVariable int id) throws ProductoNotFoundException {
+        // Se puede obtener un producto por id
+        if (id < 1)
+            // Si el id es menor a 1, se lanza una excepción
+            throw new ParametroFueraDeRangoException("El id del producto debe ser mayor a 0");
+        Optional<Producto> result = productoService.getProductoById(id);
+        if (result.isPresent())
+            return ResponseEntity.ok(new ProductoDTO(result.get()));
+        // Si no se encuentra el producto, se lanza una excepción
+        throw new ProductoNotFoundException("No se encontró el producto con id: " + id);
+    }
+
+    @GetMapping("/nombre/{nombreProducto}")
+    public ResponseEntity<ProductoDTO> getProductoByName(@RequestParam String nombreProducto)
             throws ProductoNotFoundException {
         // Se puede obtener el producto por nombre
         if (nombreProducto == null || nombreProducto.isEmpty())
@@ -62,13 +81,13 @@ public class ProductoController {
             throw new ParametroFueraDeRangoException("El nombre del producto no puede ser nulo o vacío");
         Optional<Producto> result = productoService.getProductoByName(nombreProducto);
         if (result.isPresent())
-            return ResponseEntity.ok(result.get());
+            return ResponseEntity.ok(new ProductoDTO(result.get()));
         // Si no se encuentra el producto, se lanza una excepción
         throw new ProductoNotFoundException("No se encontró el producto con nombre: " + nombreProducto);
     }
 
-    @GetMapping("/{categoria}")
-    public ResponseEntity<Producto> getProductoByCategory(@RequestParam int categoria_id)
+    @GetMapping("/categoria/{categoria}")
+    public ResponseEntity<ProductoDTO> getProductoByCategory(@RequestParam int categoria_id)
             throws ProductoNotFoundException {
         // Se puede obtener el producto por el id de la categoria
         if (categoria_id < 1)
@@ -79,29 +98,28 @@ public class ProductoController {
             Categoria categoria = categoriaOptional.get();
             Optional<Producto> producto = productoService.getProductoByCategory(categoria);
             // Si la categoria es nula, se lanza una excepción
-            return ResponseEntity.ok(producto.orElseThrow(
-                    () -> new ProductoNotFoundException("No se encontró el producto con categoría: " + categoria_id)));
+            return ResponseEntity.ok(new ProductoDTO(producto.get()));
 
         }
         // Si no se encuentra el producto, se lanza una excepción
         throw new ProductoNotFoundException("No se encontró el producto con categoría: " + categoria_id);
     }
 
-    @GetMapping("/{marca}")
-    public ResponseEntity<Producto> getProductoByMarca(@RequestParam String marca) throws ProductoNotFoundException {
+    @GetMapping("/marca/{marca}")
+    public ResponseEntity<ProductoDTO> getProductoByMarca(@RequestParam String marca) throws ProductoNotFoundException {
         // Se puede obtener el producto por marca
         if (marca == null || marca.isEmpty())
             // Si la marca es nula o vacía, se lanza una excepción
             throw new ParametroFueraDeRangoException("La marca no puede ser nula o vacía");
         Optional<Producto> result = productoService.getProductoByMarca(marca);
         if (result.isPresent())
-            return ResponseEntity.ok(result.get());
+            return ResponseEntity.ok(new ProductoDTO(result.get()));
         // Si no se encuentra el producto, se lanza una excepción
         throw new ProductoNotFoundException("No se encontró el producto con marca: " + marca);
     }
 
-    @GetMapping("/{precio}")
-    public ResponseEntity<Producto> getProductoByPrecioMaximo(@RequestParam BigDecimal precioMax,
+    @GetMapping("/precio{precio}")
+    public ResponseEntity<ProductoDTO> getProductoByPrecioMaximo(@RequestParam BigDecimal precioMax,
             @RequestParam BigDecimal precioMin) throws ProductoNotFoundException {
         // Se puede obtener el producto por precio
         Optional<Producto> result = Optional.empty();
@@ -121,7 +139,7 @@ public class ProductoController {
             result = productoService.getProductoByPrecio(precioMax, precioMin);
         }
         if (result.isPresent()) {
-            return ResponseEntity.ok(result.get());
+            return ResponseEntity.ok(new ProductoDTO(result.get()));
         }
         // Si no se encuentra el producto, se lanza una excepción
         throw new ProductoNotFoundException(
@@ -176,20 +194,11 @@ public class ProductoController {
         // Si la categoria no existe, se lanza una excepción
         categorias.getCategoriaById(producto.getCategoria_id())
                 .orElseThrow(() -> new ParametroFueraDeRangoException("La categoría no existe"));
-        Optional<Producto> existingProduct = productoService.getProductoByName(producto.getNombre());
-        if (existingProduct.isPresent()) {
-            if (producto.getNombre() == existingProduct.get().getNombre()
-                    && producto.getDescripcion() == existingProduct.get().getDescripcion()
-                    && producto.getMarca() == existingProduct.get().getMarca()) {
-                // Si el producto ya existe, se lanza una excepción
-                throw new ProductoDuplicateException("El producto ya existe");
-            }
-        }
         Producto result = productoService.createProducto(producto);
-        return ResponseEntity.created(URI.create("/productos/" + result.getId())).body(result);
+        return ResponseEntity.created(URI.create("/productos/" + result.getId())).body(new ProductoDTO(result));
     }
 
-    @PutMapping
+    @PutMapping("/{id}")
     public ResponseEntity<Object> updateProducto(@PathVariable int id, @RequestBody ProductoRequest productoRequest)
             throws ProductoNotFoundException {
         // Se puede actualizar un producto
@@ -238,13 +247,8 @@ public class ProductoController {
         // Si la categoria no existe, se lanza una excepción
         categorias.getCategoriaById(productoRequest.getCategoria_id())
                 .orElseThrow(() -> new ParametroFueraDeRangoException("La categoría no existe"));
-        Optional<Producto> result = productoService.getProductoById(id);
-        if (result.isPresent()) {
-            productoService.updateProducto(id, productoRequest);
-            return ResponseEntity.ok(result.get());
-        }
-        // Si no se encuentra el producto, se lanza una excepción
-        throw new ProductoNotFoundException("No se encontró el producto con id: " + id);
+        Producto result = productoService.updateProducto(id, productoRequest);
+        return ResponseEntity.ok(new ProductoDTO(result));
     }
 
     @DeleteMapping("/{id}")

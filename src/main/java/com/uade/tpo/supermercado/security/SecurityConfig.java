@@ -33,6 +33,15 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/categorias/*").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/categorias/*").hasAuthority("ADMIN")
 
+                        // Endpoints publicos de Productos
+                        .requestMatchers(HttpMethod.GET, "/productos").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/productos/*").permitAll()
+                        // Endpoints protegidos de Productos (solo ADMIN)
+                        .requestMatchers(HttpMethod.POST, "/productos").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/productos").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/productos/*").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/productos/*").hasAuthority("ADMIN")
+                        
                         // Endpoints protegidos de Carrito(Solo Usuario y ADMIN)
                         .requestMatchers(HttpMethod.POST, "/carritos/usuarios/{usuarioId}")
                         .hasAnyAuthority("USER", "ADMIN")
