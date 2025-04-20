@@ -5,12 +5,16 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+import org.hibernate.query.Page;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import com.uade.tpo.supermercado.entity.Categoria;
 import com.uade.tpo.supermercado.entity.Producto;
+
+import jakarta.transaction.Transactional;
 
 @Repository
 public interface ProductoRepository extends JpaRepository<Producto, Integer> {
@@ -36,10 +40,11 @@ public interface ProductoRepository extends JpaRepository<Producto, Integer> {
         @Query(value = "select p from Producto p where p.categoria = ?1")
         Optional<Producto> findByCategoria(Categoria categoria);
 
-        @Query(value = "Select p from Producto p")
-        Optional<Producto> findAllProductos();
-
+        @Transactional
+        @Modifying
         @Query(value = "Delete from Producto where id = ?1", nativeQuery = true)
         void deleteProducto(int id);
 
+        boolean existsByNombreAndDescripcionAndMarcaAndDateAndCategoria(String nombre, String descripcion,
+                        String marca, LocalDate fechaVencimiento, Categoria categoria);
 }

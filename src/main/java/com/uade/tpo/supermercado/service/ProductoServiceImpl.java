@@ -5,16 +5,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
-
 import com.uade.tpo.supermercado.controller.ProductoRequest;
 import com.uade.tpo.supermercado.entity.Categoria;
 import com.uade.tpo.supermercado.entity.Imagen;
 import com.uade.tpo.supermercado.entity.Producto;
 import com.uade.tpo.supermercado.excepciones.ProductoDuplicateException;
 import com.uade.tpo.supermercado.excepciones.ProductoNotFoundException;
+import com.uade.tpo.supermercado.repository.ImagenRepository;
 import com.uade.tpo.supermercado.repository.ProductoRepository;
 
 @Service
@@ -24,12 +25,14 @@ public class ProductoServiceImpl implements ProductoService {
     private ProductoRepository productoRepository;
 
     @Autowired
+    private ImagenRepository imagenRepository;
+
+    @Autowired
     private CategoriaService categorias;
 
     @Override
-    public Page<Producto> getProductos(PageRequest pageRequest) {
-        
-        return productoRepository.findAll(pageRequest);
+    public Page<Producto> getProductos(Pageable pageable)  {
+        return productoRepository.findAll(pageable);
     }
 
     @Override
@@ -67,6 +70,14 @@ public class ProductoServiceImpl implements ProductoService {
             throws ProductoDuplicateException {
         
         // Crea un nuevo producto y lo guarda en la base de datos
+        // Verifica si el producto ya existe
+        if (productoRepository.existsByNombreAndDescripcionAndMarcaAndDateAndCategoria(
+                productoRequest.getNombre(), productoRequest.getDescripcion(),
+                productoRequest.getMarca(), productoRequest.getFechaVencimiento(),
+                categorias.getCategoriaById(productoRequest.getCategoria_id()).get())) {
+            throw new ProductoDuplicateException("El producto ya existe.");
+        }
+        // Si no existe, crea un nuevo producto
         Producto nuevoProducto = new Producto();
         nuevoProducto.setNombre(productoRequest.getNombre());
         nuevoProducto.setDescripcion(productoRequest.getDescripcion());
@@ -80,6 +91,8 @@ public class ProductoServiceImpl implements ProductoService {
         nuevoProducto.setEstado(productoRequest.getEstado());
         nuevoProducto.setVentas_totales(productoRequest.getVentasTotales());
         nuevoProducto.setDate(productoRequest.getFechaVencimiento());
+        
+        Producto productoConImagenes = productoRepository.save(nuevoProducto);
         // agregamos las imagenes
         List<Imagen> imagenes = new ArrayList<>();
         for (String imagenUrl : productoRequest.getImagenes()) {
@@ -87,13 +100,18 @@ public class ProductoServiceImpl implements ProductoService {
             imagen.setImagen(imagenUrl);
             imagen.setProducto(nuevoProducto);
             imagenes.add(imagen);
+            imagenRepository.save(imagen); // Guarda cada imagen en la base de datos
         }
-        return productoRepository.save(nuevoProducto);
+        return productoConImagenes;
     }
 
     @Override
     public Producto updateProducto(int id, ProductoRequest productoRequest)
             throws ProductoNotFoundException {
+        // Verifica si el producto existe
+        if (!productoRepository.findById(id).isPresent()) {
+            throw new ProductoNotFoundException("El producto no existe.");
+        }
         Producto producto= productoRepository.findById(id).get();
         producto.setNombre(productoRequest.getNombre());
         producto.setDescripcion(productoRequest.getDescripcion());
@@ -110,19 +128,21 @@ public class ProductoServiceImpl implements ProductoService {
 
         //eliminar las imagenes viejas
         List<Imagen> imagenesViejas = producto.getImagenes();
-        for (Imagen imagen : imagenesViejas) {
-            imagen.setProducto(null); // Desvincula la imagen del producto
+        for(Imagen imagen : imagenesViejas){
+            imagenRepository.delete(imagen); // Elimina las imagenes viejas de la base de datos
         }
-        // Actualiza las imágenes
+        // Guarda el producto actualizado en la base de datos
+        Producto productoConImagenes= productoRepository.save(producto);
+        // Guarda las nuevas imágenes en la base de datos
         List<Imagen> imagenes = new ArrayList<>();
         for (String imagenUrl : productoRequest.getImagenes()) {
             Imagen imagen = new Imagen();
             imagen.setImagen(imagenUrl);
             imagen.setProducto(producto);
             imagenes.add(imagen);
+            imagenRepository.save(imagen); // Guarda cada imagen en la base de datos
         }
-        // Guarda el producto actualizado en la base de datos
-        return productoRepository.save(producto);
+        return productoConImagenes;
         }
 
     @Override
@@ -134,5 +154,7 @@ public class ProductoServiceImpl implements ProductoService {
     public Optional<Producto> getProductoById(int id) {
         return productoRepository.findById(id);
     }
+
+
 
 }
