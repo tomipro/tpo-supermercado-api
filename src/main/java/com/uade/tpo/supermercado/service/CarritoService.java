@@ -1,18 +1,19 @@
 package com.uade.tpo.supermercado.service;
 
 import com.uade.tpo.supermercado.entity.Carrito;
+import com.uade.tpo.supermercado.entity.Usuario;
 import com.uade.tpo.supermercado.entity.dto.CarritoResponse;
 
 public interface CarritoService {
-    Carrito crearCarrito(int usuarioId);
+    Carrito crearCarrito(Usuario usuario);
 
-    Carrito obtenerCarrito(int usuarioId);
+    Carrito obtenerCarrito(Usuario usuario);
 
-    Carrito agregarProducto(int usuarioId, int productoId, int cantidad);
+    Carrito agregarProducto(Usuario usuario, int productoId, int cantidad);
 
-    Carrito eliminarProducto(int usuarioId, int productoId);
+    Carrito eliminarProducto(Usuario usuario, int productoId, int cantidad);
 
-    Carrito vaciarCarrito(int usuarioId);
+    Carrito vaciarCarrito(Usuario usuario);
 
     CarritoResponse convertirACarritoResponse(Carrito carrito);
 

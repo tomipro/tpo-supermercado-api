@@ -1,8 +1,11 @@
 package com.uade.tpo.supermercado.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.uade.tpo.supermercado.entity.Carrito;
+import com.uade.tpo.supermercado.entity.EstadoCarrito;
 import com.uade.tpo.supermercado.entity.Usuario;
 
 import java.util.Optional;
@@ -13,6 +16,10 @@ public interface CarritoRepository extends JpaRepository<Carrito, Integer> {
     Optional<Carrito> findByUsuario(Usuario usuario);
 
     // Buscar carrito por usuario y estado ("ACTIVO", "VACIO")
-    Optional<Carrito> findByUsuarioAndEstado(Usuario usuario, String estado);
+    Optional<Carrito> findByUsuarioIdAndEstado(int usuarioId, EstadoCarrito estado);
+
+    @Query("SELECT c FROM Carrito c LEFT JOIN FETCH c.itemsCarrito WHERE c.usuario.id = :usuarioId AND c.estado = :estado")
+    Optional<Carrito> findByUsuarioIdAndEstadoConItems(@Param("usuarioId") int usuarioId,
+            @Param("estado") EstadoCarrito estado);
 
 }

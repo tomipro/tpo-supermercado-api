@@ -26,12 +26,21 @@ public class ManejoErrores {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
     }
 
-    // Manejo de errores genéricos (opcional, para capturar otras excepciones no
-    // específicas)
+    // Manejo de errores genéricos
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> manejarExcepcionGenerica(Exception ex) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body("Ha ocurrido un error inesperado: " + ex.getMessage());
 
+    }
+
+    @ExceptionHandler(StockInsuficienteException.class)
+    public ResponseEntity<String> manejarStockInsuficiente(StockInsuficienteException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(EstadoInvalidoException.class)
+    public ResponseEntity<String> manejarEstadoInvalido(EstadoInvalidoException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
 }

@@ -29,7 +29,7 @@ import java.time.LocalDate;
 @RestController
 @RequestMapping("Producto")
 public class ProductoController {
-    
+
     @Autowired
     private ProductoService productoService;
     @Autowired
@@ -42,11 +42,11 @@ public class ProductoController {
         // Se puede obtener una lista paginada de productos
         if (page == null || size == null)
             // Si no se proporciona paginación, se devuelven todos los productos
-            return ResponseEntity.ok(productoService.getProductos(PageRequest.of(1, Integer.MAX_VALUE)));
+            return ResponseEntity.ok(productoService.getProductos(PageRequest.of(0, Integer.MAX_VALUE)));
         else if (productoService.getProductos(PageRequest.of(page, size)).isEmpty())
             // Si no se encuentra ningún producto, se lanza una excepción
             throw new ProductoNotFoundException("No hay productos cargados en el sistema");
-        else if (page < 1 || size < 1)
+        else if (page < 1 || size < 0)
             // Si la página o el tamaño son menores a 1, se lanza una excepción
             throw new ParametroFueraDeRangoException("Los parámetros de paginación deben ser mayores a 0");
         else
@@ -81,7 +81,7 @@ public class ProductoController {
             // Si la categoria es nula, se lanza una excepción
             return ResponseEntity.ok(producto.orElseThrow(
                     () -> new ProductoNotFoundException("No se encontró el producto con categoría: " + categoria_id)));
-            
+
         }
         // Si no se encuentra el producto, se lanza una excepción
         throw new ProductoNotFoundException("No se encontró el producto con categoría: " + categoria_id);
@@ -129,10 +129,11 @@ public class ProductoController {
     }
 
     @PostMapping
-    public ResponseEntity<Object> createProducto(@RequestBody ProductoRequest producto) throws ProductoDuplicateException, ParametroFueraDeRangoException {
+    public ResponseEntity<Object> createProducto(@RequestBody ProductoRequest producto)
+            throws ProductoDuplicateException, ParametroFueraDeRangoException {
         // Se puede crear un producto
         if (producto.getCategoria_id() < 1) {
-            //Si el id de la categoria es menor a 1, se lanza una excepción
+            // Si el id de la categoria es menor a 1, se lanza una excepción
             throw new ParametroFueraDeRangoException("El id del producto debe ser mayor a 0");
         }
         if (producto.getNombre() == null || producto.getNombre().isEmpty()) {
@@ -160,7 +161,8 @@ public class ProductoController {
             throw new ParametroFueraDeRangoException("El stock mínimo no puede ser menor a 0");
         }
         if (producto.getFechaVencimiento() == null || producto.getFechaVencimiento().isBefore(LocalDate.now())) {
-            // Si la fecha de vencimiento es nula o es anterior a la fecha actual, se lanza una excepción
+            // Si la fecha de vencimiento es nula o es anterior a la fecha actual, se lanza
+            // una excepción
             throw new ParametroFueraDeRangoException("La fecha de vencimiento no puede ser nula");
         }
         if (producto.getVentasTotales() < 0) {
@@ -176,8 +178,9 @@ public class ProductoController {
                 .orElseThrow(() -> new ParametroFueraDeRangoException("La categoría no existe"));
         Optional<Producto> existingProduct = productoService.getProductoByName(producto.getNombre());
         if (existingProduct.isPresent()) {
-            if (producto.getNombre() == existingProduct.get().getNombre() && producto.getDescripcion() == existingProduct.get().getDescripcion() 
-                && producto.getMarca() == existingProduct.get().getMarca()) {
+            if (producto.getNombre() == existingProduct.get().getNombre()
+                    && producto.getDescripcion() == existingProduct.get().getDescripcion()
+                    && producto.getMarca() == existingProduct.get().getMarca()) {
                 // Si el producto ya existe, se lanza una excepción
                 throw new ProductoDuplicateException("El producto ya existe");
             }
@@ -191,7 +194,7 @@ public class ProductoController {
             throws ProductoNotFoundException {
         // Se puede actualizar un producto
         if (productoRequest.getCategoria_id() < 1) {
-            //Si el id de la categoria es menor a 1, se lanza una excepción
+            // Si el id de la categoria es menor a 1, se lanza una excepción
             throw new ParametroFueraDeRangoException("El id del producto debe ser mayor a 0");
         }
         if (productoRequest.getNombre() == null || productoRequest.getNombre().isEmpty()) {
@@ -218,8 +221,10 @@ public class ProductoController {
             // Si el stock mínimo es menor a 0, se lanza una excepción
             throw new ParametroFueraDeRangoException("El stock mínimo no puede ser menor a 0");
         }
-        if (productoRequest.getFechaVencimiento() == null || productoRequest.getFechaVencimiento().isBefore(LocalDate.now())) {
-            // Si la fecha de vencimiento es nula o es anterior a la fecha actual, se lanza una excepción
+        if (productoRequest.getFechaVencimiento() == null
+                || productoRequest.getFechaVencimiento().isBefore(LocalDate.now())) {
+            // Si la fecha de vencimiento es nula o es anterior a la fecha actual, se lanza
+            // una excepción
             throw new ParametroFueraDeRangoException("La fecha de vencimiento no puede ser nula");
         }
         if (productoRequest.getVentasTotales() < 0) {
@@ -232,7 +237,7 @@ public class ProductoController {
         }
         // Si la categoria no existe, se lanza una excepción
         categorias.getCategoriaById(productoRequest.getCategoria_id())
-                .orElseThrow(() -> new ParametroFueraDeRangoException("La categoría no existe"));     
+                .orElseThrow(() -> new ParametroFueraDeRangoException("La categoría no existe"));
         Optional<Producto> result = productoService.getProductoById(id);
         if (result.isPresent()) {
             productoService.updateProducto(id, productoRequest);

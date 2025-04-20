@@ -36,7 +36,7 @@ public class OrdenServiceImpl implements OrdenService {
         Usuario usuario = usuarioService.getUsuarioByIdOrThrow(usuarioId);
 
         // 2. Obtener el carrito del usuario
-        Carrito carrito = carritoRepository.findByUsuarioAndEstado(usuario, "ACTIVO")
+        Carrito carrito = carritoRepository.findByUsuarioIdAndEstado(usuarioId, EstadoCarrito.ACTIVO)
                 .orElseThrow(() -> new IllegalArgumentException("No existe un carrito activo para el usuario"));
 
         // 3. Verificar que el carrito no esté vacío
@@ -80,7 +80,7 @@ public class OrdenServiceImpl implements OrdenService {
 
         // 9. Vaciar el carrito
         carrito.getItemsCarrito().clear();
-        carrito.setEstado("VACIO");
+        carrito.setEstado(EstadoCarrito.VACIO);
 
         // 10. Guardar el carrito vacío
         carritoRepository.save(carrito);
