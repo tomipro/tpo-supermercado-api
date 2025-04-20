@@ -31,7 +31,7 @@ public class ProductoServiceImpl implements ProductoService {
     private CategoriaService categorias;
 
     @Override
-    public Page<Producto> getProductos(Pageable pageable)  {
+    public Page<Producto> getProductos(Pageable pageable) {
         return productoRepository.findAll(pageable);
     }
 
@@ -68,7 +68,7 @@ public class ProductoServiceImpl implements ProductoService {
     @Override
     public Producto createProducto(ProductoRequest productoRequest)
             throws ProductoDuplicateException {
-        
+
         // Crea un nuevo producto y lo guarda en la base de datos
         // Verifica si el producto ya existe
         if (productoRepository.existsByNombreAndDescripcionAndMarcaAndDateAndCategoria(
@@ -84,14 +84,14 @@ public class ProductoServiceImpl implements ProductoService {
         nuevoProducto.setMarca(productoRequest.getMarca());
         nuevoProducto.setPrecio(productoRequest.getPrecio());
         categorias.getCategoriaById(productoRequest.getCategoria_id())
-            .ifPresent(nuevoProducto::setCategoria);
+                .ifPresent(nuevoProducto::setCategoria);
         nuevoProducto.setStock(productoRequest.getStock());
         nuevoProducto.setStock_minimo(productoRequest.getStockMinimo());
         nuevoProducto.setUnidad_medida(productoRequest.getUnidadMedida());
         nuevoProducto.setEstado(productoRequest.getEstado());
         nuevoProducto.setVentas_totales(productoRequest.getVentasTotales());
         nuevoProducto.setDate(productoRequest.getFechaVencimiento());
-        
+
         Producto productoConImagenes = productoRepository.save(nuevoProducto);
         // agregamos las imagenes
         List<Imagen> imagenes = new ArrayList<>();
@@ -102,6 +102,8 @@ public class ProductoServiceImpl implements ProductoService {
             imagenes.add(imagen);
             imagenRepository.save(imagen); // Guarda cada imagen en la base de datos
         }
+        // Asocia las imágenes al producto
+        productoConImagenes.setImagenes(imagenes);
         return productoConImagenes;
     }
 
@@ -112,7 +114,7 @@ public class ProductoServiceImpl implements ProductoService {
         if (!productoRepository.findById(id).isPresent()) {
             throw new ProductoNotFoundException("El producto no existe.");
         }
-        Producto producto= productoRepository.findById(id).get();
+        Producto producto = productoRepository.findById(id).get();
         producto.setNombre(productoRequest.getNombre());
         producto.setDescripcion(productoRequest.getDescripcion());
         producto.setMarca(productoRequest.getMarca());
@@ -126,13 +128,13 @@ public class ProductoServiceImpl implements ProductoService {
         producto.setVentas_totales(productoRequest.getVentasTotales());
         producto.setDate(productoRequest.getFechaVencimiento());
 
-        //eliminar las imagenes viejas
+        // eliminar las imagenes viejas
         List<Imagen> imagenesViejas = producto.getImagenes();
-        for(Imagen imagen : imagenesViejas){
+        for (Imagen imagen : imagenesViejas) {
             imagenRepository.delete(imagen); // Elimina las imagenes viejas de la base de datos
         }
         // Guarda el producto actualizado en la base de datos
-        Producto productoConImagenes= productoRepository.save(producto);
+        Producto productoConImagenes = productoRepository.save(producto);
         // Guarda las nuevas imágenes en la base de datos
         List<Imagen> imagenes = new ArrayList<>();
         for (String imagenUrl : productoRequest.getImagenes()) {
@@ -142,8 +144,10 @@ public class ProductoServiceImpl implements ProductoService {
             imagenes.add(imagen);
             imagenRepository.save(imagen); // Guarda cada imagen en la base de datos
         }
+        // Asocia las imágenes al producto
+        productoConImagenes.setImagenes(imagenes);
         return productoConImagenes;
-        }
+    }
 
     @Override
     public void deleteProducto(int id) throws ProductoNotFoundException {
@@ -154,7 +158,5 @@ public class ProductoServiceImpl implements ProductoService {
     public Optional<Producto> getProductoById(int id) {
         return productoRepository.findById(id);
     }
-
-
 
 }
