@@ -17,6 +17,8 @@ import com.uade.tpo.supermercado.excepciones.ProductoDuplicateException;
 import com.uade.tpo.supermercado.excepciones.ProductoNotFoundException;
 import com.uade.tpo.supermercado.repository.ImagenRepository;
 import com.uade.tpo.supermercado.repository.ProductoRepository;
+import com.uade.tpo.supermercado.spec.ProductoSpecification;
+import org.springframework.data.jpa.domain.Specification;
 
 @Service
 public class ProductoServiceImpl implements ProductoService {
@@ -155,6 +157,14 @@ public class ProductoServiceImpl implements ProductoService {
         return productoRepository.findById(id);
     }
 
-
+    @Override
+    public Page<Producto> filtrarProductos(String nombre, String marca, Integer categoriaId, BigDecimal precioMin, BigDecimal precioMax, Pageable pageable) {
+        Specification<Producto> spec = Specification.where(ProductoSpecification.nombreContains(nombre))
+            .and(ProductoSpecification.marcaEquals(marca))
+            .and(ProductoSpecification.categoriaIdEquals(categoriaId))
+            .and(ProductoSpecification.precioGreaterThanOrEqual(precioMin))
+            .and(ProductoSpecification.precioLessThanOrEqual(precioMax));
+        return productoRepository.findAll(spec, pageable);
+    }
 
 }

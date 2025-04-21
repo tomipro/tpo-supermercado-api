@@ -361,6 +361,29 @@ Response:
 Errores: No existe la categoria que se quiere actualizar
 ---
 
+## Endpoints de Producto
+
+### GET /producto
+
+Permite filtrar productos por cualquier combinación de los siguientes parámetros (todos opcionales):
+
+- `nombre`: filtra por nombre (contiene, case-insensitive)
+- `marca`: filtra por marca (exacto, case-insensitive)
+- `categoriaId`: filtra por id de categoría
+- `precioMin`: precio mínimo
+- `precioMax`: precio máximo
+- `page`: número de página (default: 0)
+- `size`: tamaño de página (default: 20)
+
+**Ejemplo:**
+```
+GET /producto?nombre=leche&marca=LaSerenisima&categoriaId=2&precioMin=100&precioMax=200&page=0&size=10
+```
+
+Devuelve una página de productos que cumplen con todos los filtros.
+
+---
+
 ## Endpoints de Carrito
 > Todos los endpoints requieren autenticación JWT.  
 > Agregar header: `Authorization: Bearer {token}` (setear en Postman o Insomnia).

@@ -39,24 +39,24 @@ public class ProductoController {
     @GetMapping
     public ResponseEntity<Page<ProductoDTO>> getProductos(
             @RequestParam(required = false) Integer page,
-            @RequestParam(required = false) Integer size) throws ProductoNotFoundException {
-        // Se puede obtener una lista paginada de productos
-        if (page == null || size == null) {
-            // Si no se proporciona paginación, se devuelven todos los productos
-            Page<Producto> productos = productoService.getProductos(PageRequest.of(0, Integer.MAX_VALUE));
-            Page<ProductoDTO> productosDTO = productos.map(ProductoDTO::new);
-            return ResponseEntity.ok(productosDTO);
-        } else if (productoService.getProductos(PageRequest.of(page, size)).isEmpty())
-            // Si no se encuentra ningún producto, se lanza una excepción
-            throw new ProductoNotFoundException("No hay productos cargados en el sistema");
-        else if (page < 1 || size < 0)
-            // Si la página o el tamaño son menores a 1, se lanza una excepción
+            @RequestParam(required = false) Integer size,
+            @RequestParam(required = false) String nombre,
+            @RequestParam(required = false) String marca,
+            @RequestParam(required = false) Integer categoriaId,
+            @RequestParam(required = false) BigDecimal precioMin,
+            @RequestParam(required = false) BigDecimal precioMax
+    ) throws ProductoNotFoundException {
+        int pageNum = (page == null) ? 0 : page;
+        int pageSize = (size == null) ? 20 : size;
+        if (pageNum < 0 || pageSize < 1) {
             throw new ParametroFueraDeRangoException("Los parámetros de paginación deben ser mayores a 0");
-        else {
-            Page<Producto> productos = productoService.getProductos(PageRequest.of(page, size));
-            Page<ProductoDTO> productosDTO = productos.map(ProductoDTO::new);
-            return ResponseEntity.ok(productosDTO);
         }
+        Page<Producto> productos = productoService.filtrarProductos(nombre, marca, categoriaId, precioMin, precioMax, PageRequest.of(pageNum, pageSize));
+        if (productos.isEmpty()) {
+            throw new ProductoNotFoundException("No hay productos que coincidan con los filtros");
+        }
+        Page<ProductoDTO> productosDTO = productos.map(ProductoDTO::new);
+        return ResponseEntity.ok(productosDTO);
     }
 
     @GetMapping("/id/{id}")

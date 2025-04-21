@@ -9,6 +9,7 @@ import org.hibernate.query.Page;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 import com.uade.tpo.supermercado.entity.Categoria;
@@ -17,7 +18,7 @@ import com.uade.tpo.supermercado.entity.Producto;
 import jakarta.transaction.Transactional;
 
 @Repository
-public interface ProductoRepository extends JpaRepository<Producto, Integer> {
+public interface ProductoRepository extends JpaRepository<Producto, Integer>, JpaSpecificationExecutor<Producto> {
 
         @Query(value = "select p from Producto p where p.id = ?1")
         Optional<Producto> findById(int id);
