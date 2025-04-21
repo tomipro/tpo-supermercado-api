@@ -1,15 +1,20 @@
 package com.uade.tpo.supermercado.controller;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+
 import java.math.BigDecimal;
 import java.net.URI;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.uade.tpo.supermercado.controller.dto.CatalogoResponse;
 import com.uade.tpo.supermercado.controller.dto.ProductoDTO;
 import com.uade.tpo.supermercado.entity.Categoria;
 import com.uade.tpo.supermercado.entity.Producto;
@@ -44,14 +49,14 @@ public class ProductoController {
             @RequestParam(required = false) String marca,
             @RequestParam(required = false) Integer categoriaId,
             @RequestParam(required = false) BigDecimal precioMin,
-            @RequestParam(required = false) BigDecimal precioMax
-    ) throws ProductoNotFoundException {
+            @RequestParam(required = false) BigDecimal precioMax) throws ProductoNotFoundException {
         int pageNum = (page == null) ? 0 : page;
         int pageSize = (size == null) ? 20 : size;
         if (pageNum < 0 || pageSize < 1) {
             throw new ParametroFueraDeRangoException("Los parámetros de paginación deben ser mayores a 0");
         }
-        Page<Producto> productos = productoService.filtrarProductos(nombre, marca, categoriaId, precioMin, precioMax, PageRequest.of(pageNum, pageSize));
+        Page<Producto> productos = productoService.filtrarProductos(nombre, marca, categoriaId, precioMin, precioMax,
+                PageRequest.of(pageNum, pageSize));
         if (productos.isEmpty()) {
             throw new ProductoNotFoundException("No hay productos que coincidan con los filtros");
         }
@@ -118,7 +123,7 @@ public class ProductoController {
         throw new ProductoNotFoundException("No se encontró el producto con marca: " + marca);
     }
 
-    @GetMapping("/precio{precio}")
+    @GetMapping("/precio/{precioMax}&{precioMin}")
     public ResponseEntity<ProductoDTO> getProductoByPrecioMaximo(@RequestParam BigDecimal precioMax,
             @RequestParam BigDecimal precioMin) throws ProductoNotFoundException {
         // Se puede obtener el producto por precio
@@ -144,6 +149,38 @@ public class ProductoController {
         // Si no se encuentra el producto, se lanza una excepción
         throw new ProductoNotFoundException(
                 "No se encontraron productos con precio máximo: " + precioMax + " y mínimo: " + precioMin);
+    }
+
+    @GetMapping("/catalogo")
+    public ResponseEntity<Page<CatalogoResponse>> getCatalogo(@RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size,
+            @RequestParam(required = false) String nombre,
+            @RequestParam(required = false) String marca,
+            @RequestParam(required = false) Integer categoriaId,
+            @RequestParam(required = false) BigDecimal precioMin,
+            @RequestParam(required = false) BigDecimal precioMax) throws ProductoNotFoundException {
+        // Se puede obtener el catalogo de productos
+        int pageNum = (page == null) ? 0 : page;
+        int pageSize = (size == null) ? 20 : size;
+        if (pageNum < 0 || pageSize < 1) {
+            throw new ParametroFueraDeRangoException("Los parámetros de paginación deben ser mayores a 0");
+        }
+        Page<Producto> productos = productoService.filtrarProductos(nombre, marca, categoriaId, precioMin, precioMax,
+                PageRequest.of(pageNum, pageSize));
+        if (productos.isEmpty()) {
+            throw new ProductoNotFoundException("No hay productos que coincidan con los filtros");
+        }
+        Page<CatalogoResponse> catalogoResponse = productos.stream()
+                .filter(producto -> producto.getStock() > producto.getStock_minimo()
+                        && producto.getEstado().equals("activo"))
+                .map(CatalogoResponse::new)
+                .collect(Collectors.collectingAndThen(Collectors.toList(),
+                        list -> new PageImpl<>(list, productos.getPageable(), productos.getTotalElements())));
+        if (catalogoResponse.isEmpty()) {
+            // Si no hay productos, se lanza una excepción
+            throw new ProductoNotFoundException("No hay productos cargados");
+        }
+        return ResponseEntity.ok(catalogoResponse);
     }
 
     @PostMapping
@@ -181,7 +218,8 @@ public class ProductoController {
         if (producto.getFechaVencimiento() == null || producto.getFechaVencimiento().isBefore(LocalDate.now())) {
             // Si la fecha de vencimiento es nula o es anterior a la fecha actual, se lanza
             // una excepción
-            throw new ParametroFueraDeRangoException("La fecha de vencimiento no puede ser nula");
+            throw new ParametroFueraDeRangoException(
+                    "La fecha de vencimiento no puede ser nula o anterior a la fecha actual");
         }
         if (producto.getVentasTotales() < 0) {
             // Si las ventas totales son menores a 0, se lanza una excepción
@@ -234,7 +272,8 @@ public class ProductoController {
                 || productoRequest.getFechaVencimiento().isBefore(LocalDate.now())) {
             // Si la fecha de vencimiento es nula o es anterior a la fecha actual, se lanza
             // una excepción
-            throw new ParametroFueraDeRangoException("La fecha de vencimiento no puede ser nula");
+            throw new ParametroFueraDeRangoException(
+                    "La fecha de vencimiento no puede ser nula o anterior a la fecha actual");
         }
         if (productoRequest.getVentasTotales() < 0) {
             // Si las ventas totales son menores a 0, se lanza una excepción
