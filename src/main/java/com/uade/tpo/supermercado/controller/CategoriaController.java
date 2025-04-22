@@ -72,12 +72,7 @@ public class CategoriaController {
     public ResponseEntity<Categoria> getCategoriaById(@PathVariable int categoriaID) {
         Optional<Categoria> result = categoriaService.getCategoriaById(categoriaID);
 
-        // Validación del ID de la categoría
-        if (categoriaID < 1) {
-            throw new ParametroFueraDeRangoException("El ID de la categoría debe ser mayor o igual a 1.");
-        }
-        // Si no se encuentra la categoría, lanzamos una excepción
-
+        // Verificar si la categoría existe
         if (!result.isPresent()) {
             throw new NoEncontradoException("La categoría con ID " + categoriaID + " no se encuentra.");
         }
@@ -102,21 +97,6 @@ public class CategoriaController {
         // igual 1
         if (categoryRequest.getParentId() != null && categoryRequest.getParentId() < 1) {
             throw new ParametroFueraDeRangoException("El ID de la categoría padre debe ser mayor o igual a 1.");
-        }
-
-        // Verificar si la categoría padre existe, si se proporciona
-        if (categoryRequest.getParentId() != null) {
-            Optional<Categoria> parentCategory = categoriaService.getCategoriaById(categoryRequest.getParentId());
-            if (!parentCategory.isPresent()) {
-                throw new CategoriaNoEncontrada(
-                        "La categoría padre con ID " + categoryRequest.getParentId() + " no existe.");
-            }
-        }
-
-        // Verificar si ya existe una categoría con ese nombre y el mismo padre
-        if (categoriaService.existsByNombreAndPadre(categoryRequest.getNombre(), categoryRequest.getParentId())) {
-            throw new DatoDuplicadoException(
-                    "Ya existe una categoría con el nombre '" + categoryRequest.getNombre() + "' para ese padre.");
         }
 
         // Crear la nueva categoría
@@ -170,7 +150,7 @@ public class CategoriaController {
     @PutMapping("/{categoriaID}")
     public ResponseEntity<Categoria> updateCategory(@PathVariable int categoriaID,
             @RequestBody com.uade.tpo.supermercado.entity.dto.CategoryRequest categoryRequest) {
-        // Verificar si la categoría con el ID proporcionado existe
+
         Categoria updatedCategory = categoriaService.updateCategory(categoriaID, categoryRequest);
 
         // Devolver la categoría actualizada con un código de estado 200 OK
