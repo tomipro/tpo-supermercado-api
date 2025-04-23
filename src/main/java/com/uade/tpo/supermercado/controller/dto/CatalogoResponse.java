@@ -11,10 +11,14 @@ import lombok.Data;
 
 @Data
 public class CatalogoResponse {
+    private String nombre;
+    private String marca;
     private BigDecimal precio;
     private List<String> imagenes;
 
     public CatalogoResponse(Producto producto) {
+        this.nombre = producto.getNombre();
+        this.marca = producto.getMarca();
         this.precio = producto.getPrecio();
         this.imagenes = new ArrayList<>();
         cargarImagenes(producto);
