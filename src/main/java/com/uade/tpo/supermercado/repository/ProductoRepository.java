@@ -46,6 +46,6 @@ public interface ProductoRepository extends JpaRepository<Producto, Integer>, Jp
         @Query(value = "Delete from Producto where id = ?1", nativeQuery = true)
         void deleteProducto(int id);
 
-        boolean existsByNombreAndDescripcionAndMarcaAndDateAndCategoria(String nombre, String descripcion,
-                        String marca, LocalDate fechaVencimiento, Categoria categoria);
+        boolean existsByNombreAndDescripcionAndMarcaAndCategoria(String nombre, String descripcion,
+                        String marca, Categoria categoria);
 }

@@ -58,29 +58,30 @@ public class OrdenServiceImpl implements OrdenService {
 
         // 5. Calcular el total de la compra
         BigDecimal totalCompra = carrito.getItemsCarrito().stream()
-                .map(item -> item.getProducto().getPrecio().multiply(new BigDecimal(item.getCantidad())))
+                .map(item -> item.getPrecio_unitario().multiply(new BigDecimal(item.getCantidad())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         // 6. Obtener la dirección de envío si corresponde
         Direccion direccionEnvio = null;
         if (direccionId != null) {
             direccionEnvio = direccionService.getDireccionById(direccionId)
-                .filter(dir -> dir.getUsuario().getId() == usuario.getId())
-                .orElseThrow(() -> new NoEncontradoException("Dirección no encontrada o no pertenece al usuario"));
+                    .filter(dir -> dir.getUsuario().getId() == usuario.getId())
+                    .orElseThrow(() -> new NoEncontradoException("Dirección no encontrada o no pertenece al usuario"));
         }
 
         // 7. Crear la orden
-        Orden orden = new Orden(usuario, totalCompra, LocalDateTime.now(), "FINALIZADA", direccionEnvio, BigDecimal.ZERO);
+        Orden orden = new Orden(usuario, totalCompra, LocalDateTime.now(), "FINALIZADA", direccionEnvio,
+                BigDecimal.ZERO);
 
         // 8. Guardar la orden
         ordenRepository.save(orden);
 
         // 9. Crear los detalles de la orden y actualizar el stock de los productos
         for (ItemCarrito item : carrito.getItemsCarrito()) {
-            BigDecimal subtotal = item.getProducto().getPrecio().multiply(new BigDecimal(item.getCantidad()));
+            BigDecimal subtotal = item.getPrecio_unitario().multiply(BigDecimal.valueOf(item.getCantidad()));
 
             // Crear el detalle de la orden
-            DetalleOrden detalle = new DetalleOrden(item.getCantidad(), item.getProducto().getPrecio(), subtotal, orden,
+            DetalleOrden detalle = new DetalleOrden(item.getCantidad(), item.getPrecio_unitario(), subtotal, orden,
                     item.getProducto());
             detalleOrdenRepository.save(detalle);
             orden.getItemsOrden().add(detalle);
@@ -138,7 +139,7 @@ public class OrdenServiceImpl implements OrdenService {
                         item.getProducto().getId(),
                         item.getProducto().getNombre(),
                         item.getCantidad(),
-                        item.getProducto().getPrecio().doubleValue()))
+                        item.getPrecioUnitario().doubleValue()))
                 .toList();
 
         return new OrdenResponseDTO(

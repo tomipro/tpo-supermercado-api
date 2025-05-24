@@ -2,18 +2,15 @@ package com.uade.tpo.supermercado.controller;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-
 import java.math.BigDecimal;
 import java.net.URI;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
 import com.uade.tpo.supermercado.controller.dto.CatalogoResponse;
 import com.uade.tpo.supermercado.controller.dto.ProductoDTO;
 import com.uade.tpo.supermercado.entity.Categoria;
@@ -21,8 +18,6 @@ import com.uade.tpo.supermercado.entity.Producto;
 import com.uade.tpo.supermercado.excepciones.*;
 import com.uade.tpo.supermercado.service.ProductoService;
 import com.uade.tpo.supermercado.service.CategoriaService;
-import com.uade.tpo.supermercado.service.CategoriaServiceImpl;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -30,7 +25,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import java.time.LocalDate;
 
 @RestController
 @RequestMapping("producto")
@@ -215,11 +209,9 @@ public class ProductoController {
             // Si el stock mínimo es menor a 0, se lanza una excepción
             throw new ParametroFueraDeRangoException("El stock mínimo no puede ser menor a 0");
         }
-        if (producto.getFechaVencimiento() == null || producto.getFechaVencimiento().isBefore(LocalDate.now())) {
-            // Si la fecha de vencimiento es nula o es anterior a la fecha actual, se lanza
-            // una excepción
-            throw new ParametroFueraDeRangoException(
-                    "La fecha de vencimiento no puede ser nula o anterior a la fecha actual");
+        if (producto.getDescuento() == null || producto.getDescuento().compareTo(BigDecimal.ZERO) < 0
+                || producto.getDescuento().compareTo(new BigDecimal("100")) > 0) {
+            throw new ParametroFueraDeRangoException("El descuento debe estar entre 0 y 100");
         }
         if (producto.getVentasTotales() < 0) {
             // Si las ventas totales son menores a 0, se lanza una excepción
@@ -268,12 +260,9 @@ public class ProductoController {
             // Si el stock mínimo es menor a 0, se lanza una excepción
             throw new ParametroFueraDeRangoException("El stock mínimo no puede ser menor a 0");
         }
-        if (productoRequest.getFechaVencimiento() == null
-                || productoRequest.getFechaVencimiento().isBefore(LocalDate.now())) {
-            // Si la fecha de vencimiento es nula o es anterior a la fecha actual, se lanza
-            // una excepción
-            throw new ParametroFueraDeRangoException(
-                    "La fecha de vencimiento no puede ser nula o anterior a la fecha actual");
+        if (productoRequest.getDescuento() == null || productoRequest.getDescuento().compareTo(BigDecimal.ZERO) < 0
+                || productoRequest.getDescuento().compareTo(new BigDecimal("100")) > 0) {
+            throw new ParametroFueraDeRangoException("El descuento debe estar entre 0 y 100");
         }
         if (productoRequest.getVentasTotales() < 0) {
             // Si las ventas totales son menores a 0, se lanza una excepción

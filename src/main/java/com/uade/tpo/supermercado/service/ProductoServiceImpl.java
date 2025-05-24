@@ -7,7 +7,6 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import com.uade.tpo.supermercado.controller.ProductoRequest;
 import com.uade.tpo.supermercado.entity.Categoria;
@@ -73,9 +72,10 @@ public class ProductoServiceImpl implements ProductoService {
 
         // Crea un nuevo producto y lo guarda en la base de datos
         // Verifica si el producto ya existe
-        if (productoRepository.existsByNombreAndDescripcionAndMarcaAndDateAndCategoria(
-                productoRequest.getNombre(), productoRequest.getDescripcion(),
-                productoRequest.getMarca(), productoRequest.getFechaVencimiento(),
+        if (productoRepository.existsByNombreAndDescripcionAndMarcaAndCategoria(
+                productoRequest.getNombre(),
+                productoRequest.getDescripcion(),
+                productoRequest.getMarca(),
                 categorias.getCategoriaById(productoRequest.getCategoria_id()).get())) {
             throw new ProductoDuplicateException("El producto ya existe.");
         }
@@ -92,7 +92,7 @@ public class ProductoServiceImpl implements ProductoService {
         nuevoProducto.setUnidad_medida(productoRequest.getUnidadMedida());
         nuevoProducto.setEstado(productoRequest.getEstado());
         nuevoProducto.setVentas_totales(productoRequest.getVentasTotales());
-        nuevoProducto.setDate(productoRequest.getFechaVencimiento());
+        nuevoProducto.setDescuento(productoRequest.getDescuento());
 
         Producto productoConImagenes = productoRepository.save(nuevoProducto);
         // agregamos las imagenes
@@ -128,8 +128,7 @@ public class ProductoServiceImpl implements ProductoService {
         producto.setUnidad_medida(productoRequest.getUnidadMedida());
         producto.setEstado(productoRequest.getEstado());
         producto.setVentas_totales(productoRequest.getVentasTotales());
-        producto.setDate(productoRequest.getFechaVencimiento());
-
+        producto.setDescuento(productoRequest.getDescuento());
         // eliminar las imagenes viejas
         List<Imagen> imagenesViejas = producto.getImagenes();
         for (Imagen imagen : imagenesViejas) {
@@ -162,12 +161,13 @@ public class ProductoServiceImpl implements ProductoService {
     }
 
     @Override
-    public Page<Producto> filtrarProductos(String nombre, String marca, Integer categoriaId, BigDecimal precioMin, BigDecimal precioMax, Pageable pageable) {
+    public Page<Producto> filtrarProductos(String nombre, String marca, Integer categoriaId, BigDecimal precioMin,
+            BigDecimal precioMax, Pageable pageable) {
         Specification<Producto> spec = Specification.where(ProductoSpecification.nombreContains(nombre))
-            .and(ProductoSpecification.marcaEquals(marca))
-            .and(ProductoSpecification.categoriaIdEquals(categoriaId))
-            .and(ProductoSpecification.precioGreaterThanOrEqual(precioMin))
-            .and(ProductoSpecification.precioLessThanOrEqual(precioMax));
+                .and(ProductoSpecification.marcaEquals(marca))
+                .and(ProductoSpecification.categoriaIdEquals(categoriaId))
+                .and(ProductoSpecification.precioGreaterThanOrEqual(precioMin))
+                .and(ProductoSpecification.precioLessThanOrEqual(precioMax));
         return productoRepository.findAll(spec, pageable);
     }
 

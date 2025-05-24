@@ -15,11 +15,13 @@ public class CatalogoResponse {
     private String marca;
     private BigDecimal precio;
     private List<String> imagenes;
+    private BigDecimal descuento;
 
     public CatalogoResponse(Producto producto) {
         this.nombre = producto.getNombre();
         this.marca = producto.getMarca();
         this.precio = producto.getPrecio();
+        this.descuento = producto.getDescuento();
         this.imagenes = new ArrayList<>();
         cargarImagenes(producto);
     }

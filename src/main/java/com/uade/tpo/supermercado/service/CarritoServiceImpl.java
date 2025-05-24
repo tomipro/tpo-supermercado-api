@@ -12,6 +12,8 @@ import com.uade.tpo.supermercado.excepciones.ParametroFueraDeRangoException;
 import com.uade.tpo.supermercado.excepciones.StockInsuficienteException;
 import com.uade.tpo.supermercado.repository.CarritoRepository;
 import jakarta.transaction.Transactional;
+
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -114,7 +116,16 @@ public class CarritoServiceImpl implements CarritoService {
             item.setCantidad(nuevaCantidad); // actualizar cantidad
         } else {
             // Si no existe, crear nuevo ItemCarrito
-            ItemCarrito nuevoItem = new ItemCarrito(cantidad, producto.getPrecio(), carrito, producto);
+            BigDecimal precioConDescuento = producto.getPrecio();
+            if (producto.getDescuento() != null && producto.getDescuento().compareTo(BigDecimal.ZERO) > 0) {
+                // Ejemplo si descuento es porcentaje (e.g. 15 para 15%)
+                BigDecimal descuento = producto.getDescuento().divide(new BigDecimal(100));
+                precioConDescuento = producto.getPrecio().multiply(BigDecimal.ONE.subtract(descuento));
+            } else {
+                // Si no hay descuento, usar el precio original
+                precioConDescuento = producto.getPrecio();
+            }
+            ItemCarrito nuevoItem = new ItemCarrito(cantidad, precioConDescuento, carrito, producto);
             carrito.getItemsCarrito().add(nuevoItem);
         }
 
@@ -195,17 +206,23 @@ public class CarritoServiceImpl implements CarritoService {
 
     public CarritoResponse convertirACarritoResponse(Carrito carrito) {
         List<ItemCarritoDTO> items = carrito.getItemsCarrito().stream()
-                .map(item -> new ItemCarritoDTO(
-                        item.getProducto().getId(),
-                        item.getProducto().getNombre(),
-                        item.getCantidad(),
-                        item.getProducto().getPrecio().doubleValue()))
+                .map(item -> {
+                    Producto producto = item.getProducto();
+                    BigDecimal precio = producto.getPrecio();
+                    if (producto.getDescuento() != null && producto.getDescuento().compareTo(BigDecimal.ZERO) > 0) {
+                        BigDecimal descuento = producto.getDescuento().divide(new BigDecimal(100));
+                        precio = precio.multiply(BigDecimal.ONE.subtract(descuento));
+                    }
+                    return new ItemCarritoDTO(
+                            producto.getId(),
+                            producto.getNombre(),
+                            item.getCantidad(),
+                            precio.doubleValue());
+                })
                 .collect(Collectors.toList());
-
-        return new CarritoResponse(
-                carrito.getId(),
+        return new CarritoResponse(carrito.getId(),
                 carrito.getUsuario().getId(),
-                carrito.getEstado().toString(),
+                carrito.getEstado().name(),
                 items);
 
     }

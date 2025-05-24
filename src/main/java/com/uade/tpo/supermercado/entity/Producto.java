@@ -1,7 +1,6 @@
 package com.uade.tpo.supermercado.entity;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,8 +43,8 @@ public class Producto {
     @Column(length = 20)
     private String unidad_medida;
 
-    @Column(name = "Fecha_Vencimiento", nullable = false)
-    private LocalDate date;
+    @Column(nullable = false, precision = 5, scale = 2, columnDefinition = "DECIMAL(5,2) DEFAULT 0.00")
+    private BigDecimal descuento; // Representa un porcentaje, ej: 10.00 = 10% de descuento
 
     @ManyToOne
     @JoinColumn(name = "categoria_id", nullable = false)
