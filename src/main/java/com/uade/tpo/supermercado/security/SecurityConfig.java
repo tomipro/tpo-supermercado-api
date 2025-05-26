@@ -11,6 +11,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.http.HttpMethod;
 
 @Configuration
+
 public class SecurityConfig {
 
     @Autowired
@@ -34,13 +35,14 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/categorias/*").hasAuthority("ADMIN")
 
                         // Endpoints publicos de Productos
-                        .requestMatchers(HttpMethod.GET, "/productos").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/productos/*").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/producto/catalogo").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/producto").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/producto/*").permitAll()
                         // Endpoints protegidos de Productos (solo ADMIN)
                         .requestMatchers(HttpMethod.POST, "/productos").hasAuthority("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/productos").hasAuthority("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/productos/*").hasAuthority("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/productos/*").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/producto").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/producto/*").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/producto/*").hasAuthority("ADMIN")
 
                         // Endpoints protegidos de Carrito(Solo Usuario y ADMIN)
                         .requestMatchers(HttpMethod.POST, "/carritos/usuarios/{usuarioId}")
