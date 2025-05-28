@@ -52,8 +52,8 @@ public class UsuarioController {
     public ResponseEntity<List<UsuarioProfileDTO>> getAllUsuarios() {
         List<Usuario> usuarios = usuarioService.getAllUsuarios();
         List<UsuarioProfileDTO> safeUsuarios = usuarios.stream()
-            .map(UsuarioProfileDTO::new)
-            .toList();
+                .map(UsuarioProfileDTO::new)
+                .toList();
         return ResponseEntity.ok(safeUsuarios);
     }
 
@@ -98,17 +98,37 @@ public class UsuarioController {
             }
             Usuario usuarioExistente = usuarioOpt.get();
             // Solo actualiza los campos que vienen en el PATCH (no null)
-            if (usuarioPatch.getUsername() != null) usuarioExistente.setUsername(usuarioPatch.getUsername());
-            if (usuarioPatch.getEmail() != null) usuarioExistente.setEmail(usuarioPatch.getEmail());
-            if (usuarioPatch.getPassword() != null) usuarioExistente.setPassword(usuarioPatch.getPassword());
-            if (usuarioPatch.getNombre() != null) usuarioExistente.setNombre(usuarioPatch.getNombre());
-            if (usuarioPatch.getApellido() != null) usuarioExistente.setApellido(usuarioPatch.getApellido());
-            if (usuarioPatch.getRol() != null) usuarioExistente.setRol(usuarioPatch.getRol());
+            if (usuarioPatch.getUsername() != null)
+                usuarioExistente.setUsername(usuarioPatch.getUsername());
+            if (usuarioPatch.getEmail() != null)
+                usuarioExistente.setEmail(usuarioPatch.getEmail());
+            if (usuarioPatch.getPassword() != null)
+                usuarioExistente.setPassword(usuarioPatch.getPassword());
+            if (usuarioPatch.getNombre() != null)
+                usuarioExistente.setNombre(usuarioPatch.getNombre());
+            if (usuarioPatch.getApellido() != null)
+                usuarioExistente.setApellido(usuarioPatch.getApellido());
+            if (usuarioPatch.getRol() != null)
+                usuarioExistente.setRol(usuarioPatch.getRol());
             Usuario usuarioActualizado = usuarioService.createOrUpdateUsuario(usuarioExistente);
             return ResponseEntity.ok(new UsuarioProfileDTO(usuarioActualizado));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
+    }
+
+    // cambiar la contrasena de un usuario no auteticador por email
+    @PutMapping("/cambiar-password")
+    public ResponseEntity<String> cambiarPasswordPorEmail(@RequestParam String email,
+            @RequestBody PasswordChangeRequest passwordChangeRequest) {
+        Optional<Usuario> usuarioOpt = usuarioService.getUsuarioByEmail(email);
+        if (!usuarioOpt.isPresent()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado.");
+        }
+        Usuario usuario = usuarioOpt.get();
+        usuario.setPassword(passwordChangeRequest.getNuevaContrasena());
+        usuarioService.createOrUpdateUsuario(usuario);
+        return ResponseEntity.ok("La contraseña fue actualizada correctamente.");
     }
 
     // Cambiar la contraseña del usuario autenticado
@@ -156,8 +176,8 @@ public class UsuarioController {
     public ResponseEntity<List<UsuarioProfileDTO>> getUsuariosByRol(@PathVariable String rol) {
         List<Usuario> usuarios = usuarioService.getUsuariosByRol(rol);
         List<UsuarioProfileDTO> safeUsuarios = usuarios.stream()
-            .map(UsuarioProfileDTO::new)
-            .toList();
+                .map(UsuarioProfileDTO::new)
+                .toList();
         return ResponseEntity.ok(safeUsuarios);
     }
 
@@ -187,13 +207,12 @@ public class UsuarioController {
         // Generar JWT
         String token = jwtUtil.generateToken(usuario.getUsername(), usuario.getRol());
         UsuarioLoginResponse response = new UsuarioLoginResponse(
-            usuario.getId(),
-            usuario.getUsername(),
-            usuario.getEmail(),
-            usuario.getNombre(),
-            usuario.getApellido(),
-            usuario.getRol()
-        );
+                usuario.getId(),
+                usuario.getUsername(),
+                usuario.getEmail(),
+                usuario.getNombre(),
+                usuario.getApellido(),
+                usuario.getRol());
         return ResponseEntity.ok(new LoginJwtResponse(token, response));
     }
 }

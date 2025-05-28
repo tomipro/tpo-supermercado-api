@@ -8,14 +8,30 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.http.HttpMethod;
+
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.cors.CorsConfigurationSource;
+import java.util.List;
 
 @Configuration
 
 public class SecurityConfig {
-
     @Autowired
     private JwtRequestFilter jwtRequestFilter;
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(List.of("http://localhost:5173"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowCredentials(true); // importante si usás cookies o headers personalizados
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -24,6 +40,7 @@ public class SecurityConfig {
                         .requestMatchers("/usuarios/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/usuarios").permitAll()
                         .requestMatchers("/usuarios/exists/**").permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/usuarios/cambiar-password").permitAll()
 
                         // Endpoints publicos de Categoria
                         .requestMatchers(HttpMethod.GET, "/categorias").permitAll()
@@ -67,8 +84,10 @@ public class SecurityConfig {
 
                         .requestMatchers("/admin/**").hasAuthority("ADMIN")
                         .anyRequest().authenticated())
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .cors(org.springframework.security.config.Customizer.withDefaults());
         http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
+        // CORS configuration can be added as a bean if needed.
         return http.build();
     }
 
