@@ -55,6 +55,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/producto/catalogo").permitAll()
                         .requestMatchers(HttpMethod.GET, "/producto").permitAll()
                         .requestMatchers(HttpMethod.GET, "/producto/*").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/producto/id/*").permitAll()
                         // Endpoints protegidos de Productos (solo ADMIN)
                         .requestMatchers(HttpMethod.POST, "/productos").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/producto").hasAuthority("ADMIN")
