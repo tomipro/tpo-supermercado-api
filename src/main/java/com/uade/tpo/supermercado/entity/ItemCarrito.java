@@ -10,10 +10,11 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.Data;
+
 @Entity
 @Data
 public class ItemCarrito {
-    //Es la tabla carrito_producto en sql
+    // Es la tabla carrito_producto en sql
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,10 +23,10 @@ public class ItemCarrito {
     @Column(nullable = false)
     private int cantidad;
 
-    @Column(nullable = false,precision = 10,scale = 2)
+    @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal precio_unitario;
 
-    //relacion con carrito,cada
+    // relacion con carrito,cada
     // item del carrito pertenece a un solo carrito
     @ManyToOne
     @JoinColumn(name = "carrito_id", nullable = false)
@@ -33,10 +34,10 @@ public class ItemCarrito {
 
     // En la relacion con producto es lo mismo que carrito
     @ManyToOne
-    @JoinColumn(name = "producto_id",nullable = false)
+    @JoinColumn(name = "producto_id", nullable = false)
     private Producto producto;
 
-    public ItemCarrito(){
+    public ItemCarrito() {
 
     }
 
@@ -47,12 +48,44 @@ public class ItemCarrito {
         this.producto = producto;
     }
 
-    
+    public int getId() {
+        return id;
+    }
 
+    public void setId(int id) {
+        this.id = id;
+    }
 
+    public int getCantidad() {
+        return cantidad;
+    }
 
+    public void setCantidad(int cantidad) {
+        this.cantidad = cantidad;
+    }
 
+    public BigDecimal getPrecio_unitario() {
+        return precio_unitario;
+    }
 
+    public void setPrecio_unitario(BigDecimal precio_unitario) {
+        this.precio_unitario = precio_unitario;
+    }
 
-    
+    public Carrito getCarrito() {
+        return carrito;
+    }
+
+    public void setCarrito(Carrito carrito) {
+        this.carrito = carrito;
+    }
+
+    public Producto getProducto() {
+        return producto;
+    }
+
+    public void setProducto(Producto producto) {
+        this.producto = producto;
+    }
+
 }

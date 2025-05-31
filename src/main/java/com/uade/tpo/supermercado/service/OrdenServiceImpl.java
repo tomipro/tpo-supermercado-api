@@ -16,7 +16,6 @@ import com.uade.tpo.supermercado.entity.dto.OrdenResponseDTO;
 import com.uade.tpo.supermercado.excepciones.EstadoInvalidoException;
 import com.uade.tpo.supermercado.excepciones.NoEncontradoException;
 import com.uade.tpo.supermercado.excepciones.StockInsuficienteException;
-import com.uade.tpo.supermercado.service.DireccionService;
 
 @Service
 
@@ -132,22 +131,65 @@ public class OrdenServiceImpl implements OrdenService {
         return ordenes;
     }
 
-    @Override
     public OrdenResponseDTO convertirAOrdenResponse(Orden orden) {
-        List<ItemOrdenDTO> items = orden.getItemsOrden().stream()
-                .map(item -> new ItemOrdenDTO(
-                        item.getProducto().getId(),
-                        item.getProducto().getNombre(),
-                        item.getCantidad(),
-                        item.getPrecioUnitario().doubleValue()))
-                .toList();
+        double subtotal = 0.0;
+        double descuentoTotal = 0.0;
+        double total = 0.0;
+
+        List<ItemOrdenDTO> items = new java.util.ArrayList<>();
+        for (DetalleOrden detalle : orden.getItemsOrden()) {
+            double precioSinDescuento = detalle.getProducto().getPrecio().doubleValue();
+            double precioUnitario = detalle.getPrecioUnitario().doubleValue();
+            double cantidad = detalle.getCantidad();
+            double subtotalItem = precioSinDescuento * cantidad;
+            double totalItem = precioUnitario * cantidad;
+            double descuentoItem = subtotalItem - totalItem;
+
+            subtotal += subtotalItem;
+            descuentoTotal += descuentoItem;
+            total += totalItem;
+
+            items.add(new ItemOrdenDTO(
+                    detalle.getProducto().getId(),
+                    detalle.getProducto().getNombre(),
+                    detalle.getCantidad(),
+                    precioUnitario,
+                    totalItem));
+        }
+
+        String direccionStr = orden.getDireccionEnvio() != null
+                ? formatearDireccion(orden.getDireccionEnvio())
+                : "Retiro en local";
+        String fechaFormateada = orden.getFecha() != null
+                ? orden.getFecha().toString()
+                : "";
 
         return new OrdenResponseDTO(
                 orden.getId(),
-                orden.getUsuario().getId(),
-                orden.getFecha(),
+                fechaFormateada,
                 orden.getEstado(),
-                orden.getTotal().doubleValue(),
+                redondear(subtotal),
+                redondear(descuentoTotal),
+                redondear(total),
+                direccionStr,
                 items);
+    }
+
+    private String formatearDireccion(Direccion direccion) {
+        if (direccion == null) {
+            return "";
+        }
+        // Ajusta los campos según la estructura de tu clase Direccion
+        return direccion.getCalle() + " " + direccion.getNumero() +
+        // (direccion.getPiso() != null ? ", Piso " + direccion.getPiso() : "") +
+        // (direccion.getDepartamento() != null ? ", Depto " +
+        // direccion.getDepartamento() : "") +
+                ", " + direccion.getCiudad() +
+                ", " + direccion.getProvincia() +
+                ", " + direccion.getCodigoPostal();
+    }
+
+    private double redondear(double valor) {
+        return Math.round(valor * 100.0) / 100.0;
     }
 }

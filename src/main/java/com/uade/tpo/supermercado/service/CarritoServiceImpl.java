@@ -5,6 +5,8 @@ import org.springframework.stereotype.Service;
 import com.uade.tpo.supermercado.entity.*;
 import com.uade.tpo.supermercado.entity.dto.CarritoResponse;
 import com.uade.tpo.supermercado.entity.dto.ItemCarritoDTO;
+import com.uade.tpo.supermercado.entity.dto.ItemOrdenDTO;
+import com.uade.tpo.supermercado.entity.dto.OrdenResponseDTO;
 import com.uade.tpo.supermercado.excepciones.DatoDuplicadoException;
 import com.uade.tpo.supermercado.excepciones.EstadoInvalidoException;
 import com.uade.tpo.supermercado.excepciones.NoEncontradoException;
@@ -12,7 +14,6 @@ import com.uade.tpo.supermercado.excepciones.ParametroFueraDeRangoException;
 import com.uade.tpo.supermercado.excepciones.StockInsuficienteException;
 import com.uade.tpo.supermercado.repository.CarritoRepository;
 import jakarta.transaction.Transactional;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -22,10 +23,34 @@ import org.springframework.scheduling.annotation.Scheduled;
 
 @Service
 public class CarritoServiceImpl implements CarritoService {
+
     @Autowired
     private CarritoRepository carritoRepository;
+
     @Autowired
     private ProductoService productoService;
+
+    @Override
+    public CarritoResponse convertirACarritoResponse(Carrito carrito) {
+        List<ItemCarritoDTO> items = carrito.getItemsCarrito().stream()
+                .map(item -> new ItemCarritoDTO(
+                        item.getProducto().getId(),
+                        item.getProducto().getNombre(),
+                        item.getCantidad(),
+                        item.getPrecio_unitario().doubleValue(),
+                        item.getPrecio_unitario().doubleValue() * item.getCantidad()))
+                .collect(Collectors.toList());
+
+        double total = items.stream()
+                .mapToDouble(ItemCarritoDTO::getSubtotal)
+                .sum();
+
+        return new CarritoResponse(
+                carrito.getId(),
+                carrito.getEstado().toString(),
+                items,
+                total);
+    }
 
     @Override
     public Carrito crearCarrito(Usuario usuario) {
@@ -201,29 +226,6 @@ public class CarritoServiceImpl implements CarritoService {
 
         // 5. Retornar el carrito actualizado
         return carrito;
-
-    }
-
-    public CarritoResponse convertirACarritoResponse(Carrito carrito) {
-        List<ItemCarritoDTO> items = carrito.getItemsCarrito().stream()
-                .map(item -> {
-                    Producto producto = item.getProducto();
-                    BigDecimal precio = producto.getPrecio();
-                    if (producto.getDescuento() != null && producto.getDescuento().compareTo(BigDecimal.ZERO) > 0) {
-                        BigDecimal descuento = producto.getDescuento().divide(new BigDecimal(100));
-                        precio = precio.multiply(BigDecimal.ONE.subtract(descuento));
-                    }
-                    return new ItemCarritoDTO(
-                            producto.getId(),
-                            producto.getNombre(),
-                            item.getCantidad(),
-                            precio.doubleValue());
-                })
-                .collect(Collectors.toList());
-        return new CarritoResponse(carrito.getId(),
-                carrito.getUsuario().getId(),
-                carrito.getEstado().name(),
-                items);
 
     }
 

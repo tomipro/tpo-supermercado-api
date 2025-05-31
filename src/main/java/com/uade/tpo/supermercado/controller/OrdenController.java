@@ -33,22 +33,20 @@ public class OrdenController {
         public Integer direccionId; // null para retiro en tienda
     }
 
-    // Finalizar compra
+    // POST para finalizar compra
     @PostMapping
     public ResponseEntity<OrdenResponseDTO> finalizarCompra(
             Principal principal,
             @RequestBody FinalizarCompraRequest request) {
-        // Obtener el usuario a partir del token JWT
         String username = principal.getName();
         Usuario usuario = usuarioService.getUsuarioByUsername(username)
                 .orElseThrow(() -> new NoEncontradoException("Usuario no encontrado"));
-
         Orden orden = ordenService.finalizarCompra(usuario, request.direccionId);
         OrdenResponseDTO dto = ordenService.convertirAOrdenResponse(orden);
         return ResponseEntity.ok(dto);
     }
 
-    // obtener una orden de un usuario
+    // GET una orden por id
     @GetMapping("/{ordenId}/usuarios/{id}")
     public ResponseEntity<OrdenResponseDTO> obtenerOrden(@PathVariable int id, @PathVariable int ordenId) {
         Orden orden = ordenService.obtenerOrden(id, ordenId);
@@ -56,7 +54,7 @@ public class OrdenController {
         return ResponseEntity.ok(dto);
     }
 
-    // obtener todas las ordenes de un usuario por id
+    // GET historial de ordenes por usuario
     @GetMapping("/usuarios/{id}")
     public ResponseEntity<List<OrdenResponseDTO>> obtenerOrdenes(@PathVariable int id) {
         List<Orden> ordenes = ordenService.obtenerOrdenes(id);
@@ -65,5 +63,4 @@ public class OrdenController {
                 .toList();
         return ResponseEntity.ok(dtos);
     }
-
 }

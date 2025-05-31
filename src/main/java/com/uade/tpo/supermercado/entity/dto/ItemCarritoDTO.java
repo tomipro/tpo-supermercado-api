@@ -8,12 +8,14 @@ public class ItemCarritoDTO {
     private String nombreProducto;
     private int cantidad;
     private double precioUnitario;
+    private double subtotal;
 
-    public ItemCarritoDTO(int productoId, String nombreProducto, int cantidad, double precioUnitario) {
+    public ItemCarritoDTO(int productoId, String nombreProducto, int cantidad, double precioUnitario, double subtotal) {
         this.productoId = productoId;
         this.nombreProducto = nombreProducto;
         this.cantidad = cantidad;
         this.precioUnitario = precioUnitario;
+        this.subtotal = subtotal;
     }
 
 }
