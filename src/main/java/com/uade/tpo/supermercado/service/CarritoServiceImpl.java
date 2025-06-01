@@ -109,10 +109,6 @@ public class CarritoServiceImpl implements CarritoService {
         // Validar existencia del producto
         Producto producto = productoService.getProductoById(productoId)
                 .orElseThrow(() -> new NoEncontradoException("Producto no encontrado con ID: " + productoId));
-        // validar la cantidad
-        if (cantidad <= 0) {
-            throw new ParametroFueraDeRangoException("La cantidad debe ser mayor a cero.");
-        }
 
         // Validar que el producto esté activo
         if (!"activo".equalsIgnoreCase(producto.getEstado())) {
@@ -130,16 +126,23 @@ public class CarritoServiceImpl implements CarritoService {
                 .findFirst();
 
         if (itemExistente.isPresent()) {
-            // Si ya existe, sumar la cantidad
             ItemCarrito item = itemExistente.get();
             int nuevaCantidad = item.getCantidad() + cantidad;
-
-            if (nuevaCantidad > producto.getStock()) {
-                throw new StockInsuficienteException("No se puede agregar más productos que el stock disponible.");
+            if (nuevaCantidad < 0) {
+                throw new IllegalArgumentException("La cantidad no puede ser menor a cero.");
             }
-
-            item.setCantidad(nuevaCantidad); // actualizar cantidad
+            if (nuevaCantidad == 0) {
+                carrito.getItemsCarrito().remove(item);
+            } else {
+                if (nuevaCantidad > producto.getStock()) {
+                    throw new StockInsuficienteException("No se puede agregar más productos que el stock disponible.");
+                }
+                item.setCantidad(nuevaCantidad);
+            }
         } else {
+            if (cantidad <= 0) {
+                throw new IllegalArgumentException("No se puede agregar un producto con cantidad cero o negativa.");
+            }
             // Si no existe, crear nuevo ItemCarrito
             BigDecimal precioConDescuento = producto.getPrecio();
             if (producto.getDescuento() != null && producto.getDescuento().compareTo(BigDecimal.ZERO) > 0) {
