@@ -14,10 +14,10 @@ import org.springframework.web.bind.annotation.RestController;
 import com.uade.tpo.supermercado.service.CategoriaService;
 import java.net.URI;
 import com.uade.tpo.supermercado.entity.Categoria;
-import com.uade.tpo.supermercado.excepciones.CategoriaNoEncontrada;
-import com.uade.tpo.supermercado.excepciones.DatoDuplicadoException;
 import com.uade.tpo.supermercado.excepciones.NoEncontradoException;
 import com.uade.tpo.supermercado.excepciones.ParametroFueraDeRangoException;
+import com.uade.tpo.supermercado.entity.dto.categoriaResponse;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -35,19 +35,19 @@ public class CategoriaController {
     // pagina
 
     @GetMapping
-    public ResponseEntity<Page<Categoria>> getCategorias(
+    public ResponseEntity<Page<categoriaResponse>> getCategorias(
             @RequestParam(required = false) Integer page,
             @RequestParam(required = false) Integer size) {
 
         // Si no se proporciona paginación, se devuelven todas las categorías
         if (page == null || size == null) {
-            Page<Categoria> categorias = categoriaService.getCategorias(PageRequest.of(0, Integer.MAX_VALUE));
+            Page<Categoria> allCategorias = categoriaService.getCategorias(PageRequest.of(0, Integer.MAX_VALUE));
 
-            if (categorias.getTotalElements() == 0) {
+            if (allCategorias.getTotalElements() == 0) {
                 throw new NoEncontradoException("No hay categorías cargadas.");
             }
-
-            return ResponseEntity.ok(categorias);
+            Page<categoriaResponse> categoriasResponse = allCategorias.map(this::convertToCategoriaResponse);
+            return ResponseEntity.ok(categoriasResponse);
         }
 
         // Validación de parámetros de entrada
@@ -61,15 +61,17 @@ public class CategoriaController {
         if (categorias.getTotalElements() == 0) {
             throw new NoEncontradoException("No hay categorías cargadas.");
         }
+        // Convertir las categorías a la respuesta DTO
+        Page<categoriaResponse> categoriasResponse = categorias.map(this::convertToCategoriaResponse);
 
-        return ResponseEntity.ok(categorias);
+        return ResponseEntity.ok(categoriasResponse);
     }
 
     // Este método maneja la solicitud GET para obtener una categoría por su ID.
     // Ejemplo de uso:
     // • GET /Categorias/5 → retorna la categoría con ID 5, si existe.
     @GetMapping("/{categoriaID}")
-    public ResponseEntity<Categoria> getCategoriaById(@PathVariable int categoriaID) {
+    public ResponseEntity<categoriaResponse> getCategoriaById(@PathVariable int categoriaID) {
         Optional<Categoria> result = categoriaService.getCategoriaById(categoriaID);
 
         // Verificar si la categoría existe
@@ -77,7 +79,10 @@ public class CategoriaController {
             throw new NoEncontradoException("La categoría con ID " + categoriaID + " no se encuentra.");
         }
 
-        return ResponseEntity.ok(result.get());
+        // convertir a CategoriaResponse
+        categoriaResponse categoriaResponse = convertToCategoriaResponse(result.get());
+
+        return ResponseEntity.ok(categoriaResponse);
     }
 
     // Este método maneja la solicitud POST para crear una nueva categoría.
@@ -156,5 +161,23 @@ public class CategoriaController {
         // Devolver la categoría actualizada con un código de estado 200 OK
         return ResponseEntity.ok(updatedCategory);
 
+    }
+
+    // convertir Categoria a CategoriaResponse
+    public categoriaResponse convertToCategoriaResponse(Categoria categoria) {
+        if (categoria == null) {
+            return null;
+        }
+
+        List<categoriaResponse> subcategoriasResponse = categoria.getSubcategorias().stream()
+                .map(this::convertToCategoriaResponse)
+                .toList();
+
+        return new categoriaResponse(
+                categoria.getId(),
+                categoria.getNombre(),
+                categoria.getParentCategoria() != null ? categoria.getParentCategoria().getId() : null,
+                categoria.getParentCategoria() != null ? categoria.getParentCategoria().getNombre() : null,
+                subcategoriasResponse);
     }
 }
