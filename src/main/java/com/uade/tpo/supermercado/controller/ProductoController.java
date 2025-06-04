@@ -45,7 +45,7 @@ public class ProductoController {
             @RequestParam(required = false) BigDecimal precioMin,
             @RequestParam(required = false) BigDecimal precioMax) throws ProductoNotFoundException {
         int pageNum = (page == null) ? 0 : page;
-        int pageSize = (size == null) ? 20 : size;
+        int pageSize = (size == null) ? 200 : size;
         if (pageNum < 0 || pageSize < 1) {
             throw new ParametroFueraDeRangoException("Los parámetros de paginación deben ser mayores a 0");
         }
@@ -155,7 +155,7 @@ public class ProductoController {
             @RequestParam(required = false) BigDecimal precioMax) throws ProductoNotFoundException {
         // Se puede obtener el catalogo de productos
         int pageNum = (page == null) ? 0 : page;
-        int pageSize = (size == null) ? 20 : size;
+        int pageSize = (size == null) ? 200 : size;
         if (pageNum < 0 || pageSize < 1) {
             throw new ParametroFueraDeRangoException("Los parámetros de paginación deben ser mayores a 0");
         }
