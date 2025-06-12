@@ -130,12 +130,8 @@ public class ProductoServiceImpl implements ProductoService {
         producto.setVentas_totales(productoRequest.getVentasTotales());
         producto.setDescuento(productoRequest.getDescuento());
         // eliminar las imagenes viejas
-        List<Imagen> imagenesViejas = producto.getImagenes();
-        for (Imagen imagen : imagenesViejas) {
-            imagenRepository.delete(imagen); // Elimina las imagenes viejas de la base de datos
-        }
-        // Guarda el producto actualizado en la base de datos
-        Producto productoConImagenes = productoRepository.save(producto);
+        producto.getImagenes().clear(); // Limpia la lista de imágenes del producto
+        Producto productoConImagenes = productoRepository.save(producto); // Guarda el producto, JPA elimina las imágenes huérfanas
         // Guarda las nuevas imágenes en la base de datos
         List<Imagen> imagenes = new ArrayList<>();
         for (String imagenUrl : productoRequest.getImagenes()) {
