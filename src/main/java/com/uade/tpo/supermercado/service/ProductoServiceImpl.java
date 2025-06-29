@@ -148,7 +148,7 @@ public class ProductoServiceImpl implements ProductoService {
 
     @Override
     public void deleteProducto(int id) throws ProductoNotFoundException {
-        productoRepository.deleteProducto(id);
+        productoRepository.deleteById(id);
     }
 
     @Override

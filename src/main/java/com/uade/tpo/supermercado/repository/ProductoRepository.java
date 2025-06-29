@@ -41,11 +41,6 @@ public interface ProductoRepository extends JpaRepository<Producto, Integer>, Jp
         @Query(value = "select p from Producto p where p.categoria = ?1")
         Optional<Producto> findByCategoria(Categoria categoria);
 
-        @Transactional
-        @Modifying
-        @Query(value = "Delete from Producto where id = ?1", nativeQuery = true)
-        void deleteProducto(int id);
-
         boolean existsByNombreAndDescripcionAndMarcaAndCategoria(String nombre, String descripcion,
                         String marca, Categoria categoria);
 }
